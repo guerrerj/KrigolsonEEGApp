@@ -1,0 +1,9 @@
+<p>recorder works!</p>
+<button mat-icon-button (click)="startRecording()" *ngIf="!recording">
+  <i class="fas fa-record-vinyl">Record</i>
+</button>
+<div *ngIf="recording">
+  <button type="button" class="btn btn-primary" (click)="stopRecording()" *ngIf="recording">
+     <i class="far fa-stop-circle">stop</i>
+  </button> {{sampleCount}}
+</div>
