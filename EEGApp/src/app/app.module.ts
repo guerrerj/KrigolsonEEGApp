@@ -12,6 +12,9 @@ import { HeadsetInfoComponent } from './headset-info/headset-info.component';
 import { RecorderComponent } from './recorder/recorder.component';
 import { TimeSeriesComponent } from './time-series/time-series.component';
 import { FormsModule } from '@angular/forms';
+import { BciComponent } from './bci/bci.component';
+import { ErpComponent } from './erp/erp.component';
+import { EcgComponent } from './ecg/ecg.component';
 
 @NgModule({
   declarations: [
@@ -22,6 +25,9 @@ import { FormsModule } from '@angular/forms';
     HeadsetInfoComponent,
     RecorderComponent,
     TimeSeriesComponent,
+    BciComponent,
+    ErpComponent,
+    EcgComponent,
   ],
   imports: [
     BrowserModule,

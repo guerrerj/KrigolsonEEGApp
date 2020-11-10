@@ -6,10 +6,19 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
+
+import { BciComponent } from './bci/bci.component';
+import { EcgComponent } from './ecg/ecg.component';
+import { ErpComponent } from './erp/erp.component';
+
 const routes: Routes = [
   {path: 'frequency-bands', component : FrequencyBandsComponent},
   {path: 'frequency-spectra', component: FrequencySpectraComponent},
-  {path: 'time-series', component: TimeSeriesComponent}
+  {path: 'time-series', component: TimeSeriesComponent},
+  {path: 'bci', component: BciComponent},
+  {path: 'Ecg', component: EcgComponent},
+  {path: 'Erp', component: ErpComponent}
+  
 ];
 
 @NgModule({
@@ -17,3 +26,4 @@ const routes: Routes = [
   exports: [RouterModule]
 })
 export class AppRoutingModule { }
+
