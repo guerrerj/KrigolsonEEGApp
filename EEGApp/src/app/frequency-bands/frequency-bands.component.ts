@@ -1,3 +1,4 @@
+import { DataService } from './../shared/dataService';
 import { Component, ElementRef, Input, AfterViewInit } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
@@ -76,9 +77,11 @@ export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit
   private lines: TimeSeries[];
   chart: any;
 
-  constructor(private view: ElementRef) {}
+  constructor(private incomingData: DataService) { }
+
 
   ngOnInit(): void {
+    this.incomingData.data?.pipe(samples => this.data = samples);
     const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
     const dataSets = [];
     this.settings = getSettings();
@@ -88,7 +91,6 @@ export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit
           const temp =  Object.assign({}, spectraDataSet);
           temp.backgroundColor = backgroundColors[i];
           temp.borderColor = borderColors[i];
-         // temp.label = channelLabels[i];
           temp.data = Array(5).fill(0);
           dataSets.push(temp);
         });
@@ -120,8 +122,10 @@ export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit
       }
     });
 
+  }
 
-    this.data.pipe(
+  ngAfterViewInit(): void {
+    this.data?.pipe(
       takeUntil(this.destroy),
       bandpassFilter({
         cutoffFrequencies: [this.settings.cutOffLow, this.settings.cutOffHigh],
@@ -138,9 +142,7 @@ export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit
       .subscribe(data => {
         this.addData(data);
       });
-  }
 
-  ngAfterViewInit(): void {
     if (this.data){
       this.chart.options.scales.yAxes[0] = {
         display: true

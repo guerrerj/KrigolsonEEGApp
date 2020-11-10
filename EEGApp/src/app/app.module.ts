@@ -1,3 +1,5 @@
+import { ChartService } from './shared/chart.service';
+import { DataService } from './shared/dataService';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
@@ -9,7 +11,6 @@ import { HeadViewComponent } from './head-view/head-view.component';
 import { HeadsetInfoComponent } from './headset-info/headset-info.component';
 import { RecorderComponent } from './recorder/recorder.component';
 import { TimeSeriesComponent } from './time-series/time-series.component';
-import { ConnectMuseComponent } from './connect-muse/connect-muse.component';
 import { FormsModule } from '@angular/forms';
 
 @NgModule({
@@ -21,14 +22,13 @@ import { FormsModule } from '@angular/forms';
     HeadsetInfoComponent,
     RecorderComponent,
     TimeSeriesComponent,
-    ConnectMuseComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule
   ],
-  providers: [],
+  providers: [DataService, ChartService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

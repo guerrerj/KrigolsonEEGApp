@@ -1,4 +1,4 @@
-<section class="time-series" [ngClass]="{ 'loading': !amplitudes }">
+<div class="time-series" [ngClass]="{ 'loading': !amplitudes }">
     <article class="time-series-channel" *ngFor="let canvas of canvases, let i = index">
         <aside class="time-series-control">
             <div class="time-series-number"
@@ -20,7 +20,7 @@
             <input type="checkbox" aria-label="Checkbox for following text input">
           </div>
         </div>
-        <input type="text"  [(ngModel)]="filter" aria-label="Text input with checkbox">
+        <input type="text"  aria-label="Text input with checkbox">
       </div>
 
     </div>
@@ -30,10 +30,11 @@
           <div class="input-group-prepend">
             <span class="input-group-text">Amplitude Scale and Time Scale</span>
           </div>
-          <input type="text" aria-label="First name" class="form-control"  [(ngModel)]="amplitudeScale">
-          <input type="text" aria-label="Last name" class="form-control" [(ngModel)]="timeScale">
+          <input type="text" aria-label="First name" class="form-control"  />
+
+          <input type="text" aria-label="Last name" class="form-control" />
     </div>
       Amplitude Scale :  {{amplitudeScale}} uV
       Time Scale :{{timeScale}}
     </div>
-</section>
+</div>

@@ -1,3 +1,4 @@
+import { DataService } from './../shared/dataService';
 import { Component, ElementRef, Input, AfterViewInit } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
@@ -40,7 +41,7 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private lines: TimeSeries[];
 
-  constructor(private view: ElementRef, private chartService: ChartService) {
+  constructor(private view: ElementRef, private chartService: ChartService, private incomingData: DataService) {
   }
 
   get amplitudeScale(): number {
@@ -65,6 +66,8 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
+    // Get the data from the service
+    this.incomingData.data.pipe(samples => this.data = samples);
     this.channels = this.enableAux ? 5 : 4;
     this.canvases = Array(this.channels).fill(0).map(() => new SmoothieChart(this.options));
     this.lines = Array(this.channels).fill(0).map(() => new TimeSeries());

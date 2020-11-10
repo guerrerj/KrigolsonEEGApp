@@ -1,3 +1,4 @@
+import { DataService } from './../shared/dataService';
 import { backgroundColors, borderColors } from './../shared/chartOptions';
 import { Component, ElementRef, Input, AfterViewInit } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
@@ -80,9 +81,10 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
   private lines: TimeSeries[];
   chart: Chart;
 
-  constructor(private view: ElementRef) {}
+  constructor(private incomingData: DataService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.incomingData.data.pipe(samples => this.data = samples);
     this.settings = getSettings();
     this.settings.nChannels = this.enableAux ? 5 : 4;
 
@@ -165,14 +167,14 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
       });
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.destroy.next();
   }
 
-  addData(spectraData: any) {
+  addData(spectraData: any): void {
     for (let i = 0; i < this.settings.nChannels; i++) {
       spectraData.psd[i].forEach(() => this.chart.data.datasets[i].data.pop());
       spectraData.psd[i].forEach((val: number) => this.chart.data.datasets[i].data.push(val));

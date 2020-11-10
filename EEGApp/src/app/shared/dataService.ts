@@ -12,15 +12,16 @@ import { XYZ } from '../head-view/head-view.component';
 //   styleUrls: ['./connect-muse.component.less']
 // })
 @Injectable()
-export class ConnectMuseComponent implements  OnDestroy {
+export class DataService implements  OnDestroy {
 
   constructor(private cd: ChangeDetectorRef) {
     this.onInit();
+    console.log("Initialization of data service class");
   }
 
   time = 2;
-  connecting = false;
-  connected = false;
+  connecting = new BehaviorSubject(false);
+  connected = new BehaviorSubject(false);
   data: Observable<EEGSample> | null;
   batteryLevel: Observable<number> | null;
   controlResponses: Observable<MuseControlResponse>;
@@ -39,7 +40,7 @@ export class ConnectMuseComponent implements  OnDestroy {
       takeUntil(this.destroy)
     )
       .subscribe(status => {
-        this.connected = status;
+        this.connected.next(status);
         this.data = null;
         this.batteryLevel = null;
       });
@@ -50,7 +51,8 @@ export class ConnectMuseComponent implements  OnDestroy {
   }
 
   async connect(): Promise<any> {
-    this.connecting = true;
+    console.log("This is the connecting object", this.connecting);
+    this.connecting.next(true);
    // this.snackBar.dismiss();
     try {
       await this.muse.connect();
@@ -72,10 +74,10 @@ export class ConnectMuseComponent implements  OnDestroy {
       );
       await this.muse.deviceInfo();
     } catch (err) {
-      console.log("error is ", err);
       // this.snackBar.open('Connection failed: ' + err.toString(), 'Dismiss');
+      console.log("Error is " , err);
     } finally {
-      this.connecting = false;
+      this.connecting.next(false);
     }
   }
 
