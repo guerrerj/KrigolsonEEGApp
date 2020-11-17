@@ -1,5 +1,6 @@
+import { orderedLabels } from './../shared/chartOptions';
 import { DataService } from './../shared/dataService';
-import { Component, ElementRef, Input, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { SmoothieChart, TimeSeries } from 'smoothie';
@@ -16,7 +17,7 @@ const samplingFrequency = 256;
   templateUrl: 'time-series.component.html',
   styleUrls: ['time-series.component.less'],
 })
-export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit {
+export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
 
   @Input() data: Observable<EEGSample>;
   @Input() enableAux: boolean;
@@ -27,13 +28,17 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit {
   canvases: SmoothieChart[];
 
   readonly destroy = new Subject<void>();
-  readonly channelNames = channelNames;
+  readonly channelNames = orderedLabels;
   readonly amplitudes = [];
   readonly uVrms = [0, 0, 0, 0, 0];
   readonly uMeans = [0, 0, 0, 0, 0];
+  readonly minTimeScale = 1;
+  readonly maxTimeScale = 20;
+  readonly minAmpScale = 1;
+  readonly maxAmpScale = 10000;
 
   readonly options = this.chartService.getChartSmoothieDefaults({
-    millisPerPixel: 8,
+    millisPerPixel: 3, // Speed at which chart pans by
     maxValue: 500,
     minValue: -500
   });
@@ -48,7 +53,14 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.canvases[0].options.maxValue;
   }
 
-  set amplitudeScale(value: number)  {
+  setAmplitudeScale(value: number): void  {
+    if (isNaN(value)) {
+      return;
+    }
+    if (value < this.minAmpScale || value > this.maxAmpScale){
+     return;
+    }
+
     for (const canvas of this.canvases) {
       canvas.options.maxValue = value;
       canvas.options.minValue = -value;
@@ -59,46 +71,64 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.canvases[0].options.millisPerPixel;
   }
 
-  set timeScale(value: number) {
+  setTimeScale(value: number) : void {
+    if (isNaN(value)) {
+      return;
+    }
+    if (value < this.minTimeScale || value > this.maxTimeScale)
+    {
+      return;
+    }
+
     for (const canvas of this.canvases) {
       canvas.options.millisPerPixel = value;
     }
   }
 
+
+
   ngOnInit(): void {
     // Get the data from the service
-    this.incomingData.data.pipe(samples => this.data = samples);
     this.channels = this.enableAux ? 5 : 4;
     this.canvases = Array(this.channels).fill(0).map(() => new SmoothieChart(this.options));
     this.lines = Array(this.channels).fill(0).map(() => new TimeSeries());
     this.addTimeSeries();
-    this.data.pipe(
-      takeUntil(this.destroy),
-      mergeMap(sampleSet =>
-        sampleSet.data.slice(0, this.channels).map((value, electrode) => ({
-          timestamp: sampleSet.timestamp, value, electrode
-        }))),
-      groupBy(sample => sample.electrode),
-      mergeMap(group => {
-        const bandpassFilter = bandpass(samplingFrequency, 1, 30);
-        const conditionalFilter = value => this.filter ? bandpassFilter(value) : value;
-        return group.pipe(
-          filter(sample => !isNaN(sample.value)),
-          map(sample => ({ ...sample, value: conditionalFilter(sample.value) })),
-        );
-      })
-    )
-      .subscribe(sample => {
-        this.draw(sample.timestamp, sample.value, sample.electrode);
-      });
   }
 
   ngAfterViewInit(): void {
-    const delay = 0;
-    const channels = this.view.nativeElement.querySelectorAll('canvas');
-    this.canvases.forEach((canvas, index) => {
-      canvas.streamTo(channels[index], delay);
-    });
+
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.incomingData.data != null && this.data == null)
+    {
+      this.incomingData.data.pipe(samples => this.data = samples);
+      this.data.pipe(
+        takeUntil(this.destroy),
+        mergeMap(sampleSet =>
+          sampleSet.data.slice(0, this.channels).map((value, electrode) => ({
+            timestamp: sampleSet.timestamp, value, electrode
+          }))),
+        groupBy(sample => sample.electrode),
+        mergeMap(group => {
+          const bandpassFilter = bandpass(samplingFrequency, 1, 30);
+          const conditionalFilter = value => this.filter ? bandpassFilter(value) : value;
+          return group.pipe(
+            filter(sample => !isNaN(sample.value)),
+            map(sample => ({ ...sample, value: conditionalFilter(sample.value) })),
+          );
+        })
+      )
+        .subscribe(sample => {
+          this.draw(sample.timestamp, sample.value, sample.electrode);
+        });
+
+      const delay = 1000;
+      const channels = this.view.nativeElement.querySelectorAll('canvas');
+      this.canvases.forEach((canvas, index) => {
+        canvas.streamTo(channels[index], delay);
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -115,10 +145,12 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   draw(timestamp: number, amplitude: number, index: number): void {
-    this.uMeans[index] = 0.995 * this.uMeans[index] + 0.005 * amplitude;
-    this.uVrms[index] = Math.sqrt(0.995 * this.uVrms[index] ** 2 + 0.005 * (amplitude - this.uMeans[index]) ** 2);
+    // Get the ordered index to send data to the correct canvas
+    const orderedIndex = this.channelNames.indexOf(channelNames[index]);
+    this.uMeans[orderedIndex] = 0.995 * this.uMeans[orderedIndex] + 0.005 * amplitude;
+    this.uVrms[orderedIndex] = Math.sqrt(0.995 * this.uVrms[orderedIndex] ** 2 + 0.005 * (amplitude - this.uMeans[orderedIndex]) ** 2);
 
-    this.lines[index].append(timestamp, amplitude);
-    this.amplitudes[index] = amplitude.toFixed(2);
+    this.lines[orderedIndex].append(timestamp, amplitude);
+    this.amplitudes[orderedIndex] = amplitude.toFixed(2);
   }
 }

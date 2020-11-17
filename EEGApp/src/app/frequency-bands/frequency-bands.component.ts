@@ -1,5 +1,6 @@
+import { FreqBandsChartOptions, orderedLabels, orderedBandLabels, bandsDataSet } from './../shared/chartOptions';
 import { DataService } from './../shared/dataService';
-import { Component, ElementRef, Input, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { SmoothieChart, TimeSeries } from 'smoothie';
@@ -63,7 +64,7 @@ const samplingFrequency = 256;
   templateUrl: 'frequency-bands.component.html',
   styleUrls: ['frequency-bands.component.less'],
 })
-export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit {
+export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
 
   @Input() data: Observable<EEGSample>;
   @Input() enableAux: boolean;
@@ -73,104 +74,83 @@ export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit
 
   readonly destroy = new Subject<void>();
   readonly channelNames = channelNames;
+  readonly freqBands = 4;
 
-  private lines: TimeSeries[];
   chart: any;
 
   constructor(private incomingData: DataService) { }
 
 
   ngOnInit(): void {
-    this.incomingData.data?.pipe(samples => this.data = samples);
     const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
     const dataSets = [];
     this.settings = getSettings();
     this.settings.nChannels = this.enableAux ? 5 : 4;
 
-    Array(this.settings.nChannels).fill(0).map((ch, i) => {
+    Array(this.freqBands).fill(0).map((ch, i) => {
           const temp =  Object.assign({}, spectraDataSet);
           temp.backgroundColor = backgroundColors[i];
           temp.borderColor = borderColors[i];
-          temp.data = Array(5).fill(0);
+          temp.label = orderedBandLabels[i];
+          temp.data = Array(this.settings.nChannels).fill(0);
           dataSets.push(temp);
         });
     this.chart = new Chart(canvas, {
       type: 'bar',
       data: {
         datasets: dataSets,
-        labels: bandLabels
+        labels: orderedLabels
     },
-      options: {
-        title: {
-          display: true,
-          text: 'Frequency Bands per Electrode'
-        },
-        responsiveAnimationDuration: 0,
-        scales: {
-            yAxes: [{
-              scaleLabel: {
-              display: true,
-              labelString: 'Power (uV)'
-            }}],
-            xAxes: [{
-              scaleLabel: {
-                display: true,
-                labelString: 'Frequency Bands'
-              }
-            }]
-        }
-      }
+      options: FreqBandsChartOptions
     });
-
   }
 
-  ngAfterViewInit(): void {
-    this.data?.pipe(
-      takeUntil(this.destroy),
-      bandpassFilter({
-        cutoffFrequencies: [this.settings.cutOffLow, this.settings.cutOffHigh],
-        nbChannels: this.settings.nChannels }),
-      epoch({
-        duration: this.settings.duration,
-        interval: this.settings.interval,
-        samplingRate: this.settings.srate
-      }),
-      fft({bins: this.settings.bins }),
-      powerByBand(),
-      catchError(async (err) => console.log(err))
-    )
-      .subscribe(data => {
-        this.addData(data);
-      });
+  ngAfterViewInit(): void {  }
 
-    if (this.data){
-      this.chart.options.scales.yAxes[0] = {
-        display: true
-      };
+  ngAfterViewChecked(): void {
+    // Check for incoming data
+    if (this.incomingData.data != null && this.data == null)
+    {
+      this.incomingData.data.pipe(samples => this.data = samples);
+      this.data.pipe(
+        takeUntil(this.destroy),
+        bandpassFilter({
+          cutoffFrequencies: [this.settings.cutOffLow, this.settings.cutOffHigh],
+          nbChannels: this.settings.nChannels }),
+        epoch({
+          duration: this.settings.duration,
+          interval: this.settings.interval,
+          samplingRate: this.settings.srate
+        }),
+        fft({bins: this.settings.bins }),
+        powerByBand(),
+        catchError(async (err) => console.log(err))
+      )
+        .subscribe(data => {
+          this.addData(data);
+        });
       this.chart.update();
+      }
     }
-  }
 
   ngOnDestroy(): void {
     this.destroy.next();
   }
 
   addData(data: any): void {
-    for (let i = 0; i < this.settings.nChannels; i++) {
-       for (let k = 0; k < 5; k++) {
+    for (let i = 0; i < this.freqBands; i++) {
+       for (let k = 0; k < this.settings.nChannels; k++) {
          this.chart.data.datasets[i].data.pop();
        }
     }
-
-    for (let i = 0; i < this.settings.nChannels; i++) {
-      // Each dataset represents an electrode (channel)
-      // Each point represents a different frequency range
-        this.chart.data.datasets[i].data.push(data.alpha[i]);
-        this.chart.data.datasets[i].data.push(data.beta[i]);
-        this.chart.data.datasets[i].data.push(data.delta[i]);
-        this.chart.data.datasets[i].data.push(data.gamma[i]);
-        this.chart.data.datasets[i].data.push(data.theta[i]);
-
+    for (let k = 0; k < this.settings.nChannels; k++ ){
+      // A data set represents a freq band
+      // Split the data by bands (delta, theta, alpha, beta)
+      const orderedIndex = this.channelNames.indexOf(orderedLabels[k]); // so we can create the necesary order of data
+      this.chart.data.datasets[0].data.push(data.delta[orderedIndex]);
+      this.chart.data.datasets[1].data.push(data.theta[orderedIndex]);
+      this.chart.data.datasets[2].data.push(data.alpha[orderedIndex]);
+      this.chart.data.datasets[3].data.push(data.beta[orderedIndex]);
     }
     this.chart.update();
   }

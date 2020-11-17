@@ -1,6 +1,6 @@
 import { DataService } from './../shared/dataService';
-import { backgroundColors, borderColors } from './../shared/chartOptions';
-import { Component, ElementRef, Input, AfterViewInit } from '@angular/core';
+import { backgroundColors, borderColors, FreqBandsChartOptions, channelLabels, FreqSpectraChartOptions } from './../shared/chartOptions';
+import { Component, ElementRef, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { SmoothieChart, TimeSeries } from 'smoothie';
@@ -60,128 +60,99 @@ function getSettings(): ISettings {
     };
   }
 
-const samplingFrequency = 256;
-
 @Component({
   selector: 'app-frequency-spectra',
   templateUrl: 'frequency-spectra.component.html',
   styleUrls: ['frequency-spectra.component.less'],
 })
-export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewInit {
+export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
 
   @Input() data: Observable<EEGSample>;
   @Input() enableAux: boolean;
 
   settings: ISettings;
 
-
   readonly destroy = new Subject<void>();
   readonly channelNames = channelNames;
+  readonly maxFreq = 32;
 
-  private lines: TimeSeries[];
   chart: Chart;
 
   constructor(private incomingData: DataService) {}
 
   ngOnInit(): void {
-    this.incomingData.data.pipe(samples => this.data = samples);
+    // Get settings for the charts
     this.settings = getSettings();
     this.settings.nChannels = this.enableAux ? 5 : 4;
-
-    const canvas = document.getElementById('freqSpectra') as HTMLCanvasElement;
+    // Get the chart options such as adding dummy data and configurations
+    const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
     const dataSets = [];
-    const spectraLabels = ['TP9', 'AF7', 'AF8', 'TP10', 'AUX'];
+
     Array(this.settings.nChannels).fill(0).map((ch, i) => {
           const temp =  Object.assign({}, spectraDataSet);
           temp.backgroundColor = backgroundColors[i];
           temp.borderColor = borderColors[i];
-          temp.label = spectraLabels[i];
-          temp.data  = Array(100).fill(0);
+          temp.label = channelLabels[i];
+          temp.data  = Array(this.maxFreq).fill(0);
           dataSets.push(temp);
         });
+    // Instantiate the chart with the options
     this.chart = new Chart(canvas, {
           type: 'line',
           data: {
             datasets: [dataSets[0], dataSets[1], dataSets[2], dataSets[3]],
             labels: [],
         },
-        options: {
-          events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
-          tooltips: {
-            enabled: true,
-            intersect: true,
-            mode: 'point',
-            callbacks: {
-              label(tooltipItem: any, data) {
-                  let label = data.datasets[tooltipItem.datasetIndex].label || '';
-
-                  if (label) {
-                      label += ': ';
-                  }
-                  label += Math.round(tooltipItem.yLabel * 100) / 100;
-                  return label;
-              }
-            }
-          },
-          hover: {
-            animationDuration: 0
-          },
-          responsiveAnimationDuration: 0,
-          title: {
-            display: true,
-            text: 'Frequency Spectra per Electrode'
-          },
-          scales: {
-            yAxes: [{
-              scaleLabel: {
-              display: true,
-              labelString: 'Power (uV)'
-            }}],
-            xAxes: [{
-              scaleLabel: {
-                display: true,
-                labelString: 'Frequency (Hz)'
-              }
-            }]
-         }
-         },
-        });
-
-
-    this.data.pipe(
-      takeUntil(this.destroy),
-      bandpassFilter({
-        cutoffFrequencies: [this.settings.cutOffLow, this.settings.cutOffHigh],
-        nbChannels: this.settings.nChannels }),
-      epoch({
-        duration: this.settings.duration,
-        interval: this.settings.interval,
-        samplingRate: this.settings.srate
-      }),
-      fft({bins: this.settings.bins }),
-      sliceFFT([this.settings.sliceFFTLow, this.settings.sliceFFTHigh]),
-      catchError(async (err) => console.log(err))
-    )
-      .subscribe(data => {
-        this.addData(data);
+        options: FreqSpectraChartOptions
       });
   }
 
   ngAfterViewInit(): void {
   }
 
+  ngAfterViewChecked(): void {
+    // Check if the data is available to start processing it
+    if (this.incomingData.data != null && this.data == null) {
+      this.incomingData.data.pipe(samples => this.data = samples);
+      this.data.pipe(
+        takeUntil(this.destroy),
+        bandpassFilter({
+          cutoffFrequencies: [this.settings.cutOffLow, this.settings.cutOffHigh],
+          nbChannels: this.settings.nChannels }),
+        epoch({
+          duration: this.settings.duration,
+          interval: this.settings.interval,
+          samplingRate: this.settings.srate
+        }),
+        fft({bins: this.settings.bins }),
+        sliceFFT([this.settings.sliceFFTLow, this.settings.sliceFFTHigh]),
+        catchError(async (err) => console.log(err))
+      )
+        // Finally after data has been processed, subscribe the component to it
+        .subscribe(data => {
+          this.addData(data);
+        });
+      }
+  }
+
   ngOnDestroy(): void {
     this.destroy.next();
   }
 
+  // Add the processed data to the charts
   addData(spectraData: any): void {
     for (let i = 0; i < this.settings.nChannels; i++) {
-      spectraData.psd[i].forEach(() => this.chart.data.datasets[i].data.pop());
+      // remove old data by setting length to 0
+      this.chart.data.datasets[i].data.length = 0;
       spectraData.psd[i].forEach((val: number) => this.chart.data.datasets[i].data.push(val));
-      if (this.chart.data.labels.length < spectraData.freqs.length)
+
+      // add labels if they have not been added up until 31 labels
+      if (this.chart.data.labels.length < this.maxFreq - 1)
       {
-        this.chart.data.labels.forEach(() => this.chart.data.labels.pop());
-        spectraData.freqs.forEach((val: number) => this.chart.data.labels.push(val));
+        this.chart.data.labels.length = 0;
+        // get the freq labels that are below the maxFreq required
+        const freqs  = spectraData.freqs.filter((x: number) => x < this.maxFreq);
+        freqs.forEach((val: number) => this.chart.data.labels.push(val));
       }
     }
     this.chart.update();

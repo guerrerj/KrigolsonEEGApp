@@ -16,7 +16,6 @@ export class DataService implements  OnDestroy {
 
   constructor(private cd: ChangeDetectorRef) {
     this.onInit();
-    console.log("Initialization of data service class");
   }
 
   time = 2;
@@ -29,7 +28,6 @@ export class DataService implements  OnDestroy {
   destroy = new Subject<void>();
 
   private muse = new MuseClient();
-
 
   onUserInput(event: any): void {
     this.time = event.target.value;
@@ -51,9 +49,8 @@ export class DataService implements  OnDestroy {
   }
 
   async connect(): Promise<any> {
-    console.log("This is the connecting object", this.connecting);
     this.connecting.next(true);
-   // this.snackBar.dismiss();
+
     try {
       await this.muse.connect();
       this.controlResponses = this.muse.controlResponses;
@@ -74,7 +71,7 @@ export class DataService implements  OnDestroy {
       );
       await this.muse.deviceInfo();
     } catch (err) {
-      // this.snackBar.open('Connection failed: ' + err.toString(), 'Dismiss');
+      // Log errors
       console.log("Error is " , err);
     } finally {
       this.connecting.next(false);
@@ -89,7 +86,7 @@ export class DataService implements  OnDestroy {
     return this.muse.enableAux;
   }
 
-  set enableAux(value: boolean) {
-    this.muse.enableAux = value;
+  setEnableAux(): void {
+    this.muse.enableAux = !this.muse.enableAux;
   }
 }

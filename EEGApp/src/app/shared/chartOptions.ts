@@ -78,7 +78,9 @@ export const generalOptions = {
 };
 
 export const bandLabels = ['Alpha', 'Beta', 'Delta', 'Gamma', 'Theta'];
+export const orderedBandLabels = ['Delta', 'Theta', 'Alpha', 'Beta', 'Aux'];
 export const channelLabels = ['TP9', 'AF7', 'AF8', 'TP10', 'Aux'];
+export const orderedLabels = ['AF7', 'AF8', 'TP9', 'TP10', 'Aux'];
 
 
 export const options = {
@@ -128,4 +130,86 @@ export const spectraDataSet: ISpectraDataSet = {
   lineTension: 0.4
 };
 
+interface IBandsDataSet {
+  label: string[];
+  data: number[];
+  backgroundColor: string;
+  borderColor: string;
+  borderWidth: number;
+  fill: any;
+  lineTension: number;
+}
+export const bandsDataSet: IBandsDataSet = {
+  data: [],
+  backgroundColor: '' ,
+  borderColor: '',
+  borderWidth: 1,
+  fill: false,
+  label: [],
+  lineTension: 0.4
+};
+
 export const spectraLabels = []
+
+export const FreqSpectraChartOptions = {
+  events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+  tooltips: {
+    enabled: true,
+    intersect: true,
+    mode: 'point',
+    callbacks: {
+      label(tooltipItem: any, data) : number {
+          let label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+          if (label) {
+              label += ': ';
+          }
+          label += Math.round(tooltipItem.yLabel * 100) / 100;
+          return label;
+      }
+    }
+  },
+  hover: {
+    animationDuration: 0
+  },
+  responsiveAnimationDuration: 0,
+  title: {
+    display: true,
+    text: 'Frequency Spectra per Electrode'
+  },
+  scales: {
+    yAxes: [{
+      scaleLabel: {
+      display: true,
+      labelString: 'Power (uV)'
+    }}],
+    xAxes: [{
+      scaleLabel: {
+        display: true,
+        labelString: 'Frequency (Hz)'
+      }
+    }]
+ }
+};
+
+
+export const FreqBandsChartOptions = {
+  title: {
+    display: true,
+    text: 'Frequency Bands per Electrode'
+  },
+  responsiveAnimationDuration: 0,
+  scales: {
+      yAxes: [{
+        scaleLabel: {
+        display: true,
+        labelString: 'Power (uV)'
+      }}],
+      xAxes: [{
+        scaleLabel: {
+          display: true,
+          labelString: 'Frequency Bands'
+        }
+      }]
+  }
+};

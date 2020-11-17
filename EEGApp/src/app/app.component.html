@@ -29,7 +29,7 @@
   <div class="modal-dialog modal-md" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="connectModalLabel">Connection Settings</h5>
+        <h5 class="modal-title col-12 col-sm-6 m-auto">Connection Settings</h5>
         <span [hidden]="!(batteryLevel|async)" class="battery-level-indicator">
             <i class="fas fa-battery-full">Battery Level</i>{{batteryLevel|async|number:"1.0-0"}}%
         </span>
@@ -38,16 +38,13 @@
       </div>
 
       <div class="modal-body">
-          <button *ngIf="!connectingCopy" (click)="data.connect()">Connect</button>
-
+          <div class="row flex-auto">
+              <button class="btn btn-warning connectBtn" *ngIf="!connectingCopy" (click)="data.connect()">Connect</button>
+          </div>
           <div *ngIf="!connectingCopy">
-            <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <div class="input-group-text">
-                  <input type="checkbox"[(ngModel)]="enableAux" aria-label="enableAux">
-                  Enable Auxilary Electrode
-                </div>
-              </div>
+            <div class="auxCheckBox form-group form-check">
+                  <input #enableAuxId type="checkbox" class="form-check-input"  (click)="data.setEnableAux()" aria-label="enableAux">
+                  <label class="form-check-label" for="enableAuxId">Enable Auxilary Electrode</label>
             </div>
         </div>
 

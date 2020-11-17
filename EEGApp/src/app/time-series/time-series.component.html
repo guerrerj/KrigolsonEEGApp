@@ -1,28 +1,18 @@
-<div class="time-series" [ngClass]="{ 'loading': !amplitudes }">
-    <article class="time-series-channel" *ngFor="let canvas of canvases, let i = index">
-        <aside class="time-series-control">
-            <div class="time-series-number"
-                [ngStyle]="{ 'background': colors[i].borderColor }">
-                {{ channelNames[i] }}
-            </div>
-        </aside>
-        <canvas class="time-series-canvas"></canvas>
-        <aside class="time-series-amplitude"
-            [ngStyle]="{ 'background': colors[i].borderColor }">
-            {{ uVrms[i].toFixed(1) }} uVrms
-        </aside>
-    </article>
-
-    <div class="graph-settings">
-      <div class="input-group mb-3">
-        <div class="input-group-prepend">
-          <div class="input-group-text">
-            <input type="checkbox" aria-label="Checkbox for following text input">
-          </div>
+  <div class="container time-series">
+    <div class="row">
+      <div class="col-6 time-series-channel" *ngFor="let canvas of canvases, let i = index">
+          <aside class="time-series-control">
+              <div class="time-series-number"
+                  [ngStyle]="{ 'background': colors[i].borderColor }">
+                  {{ channelNames[i] }}
+              </div>
+          </aside>
+          <canvas class="time-series-canvas"></canvas>
+          <aside class="time-series-amplitude"
+              [ngStyle]="{ 'background': colors[i].borderColor }">
+              {{ uVrms[i].toFixed(1) }} uVrms
+          </aside>
         </div>
-        <input type="text"  aria-label="Text input with checkbox">
-      </div>
-
     </div>
 
     <div class="graph-settings">
@@ -30,11 +20,11 @@
           <div class="input-group-prepend">
             <span class="input-group-text">Amplitude Scale and Time Scale</span>
           </div>
-          <input type="text" aria-label="First name" class="form-control"  />
+          <input #amplitudeElem type="text" aria-label="Amplitude" class="form-control" (keyup.enter)="setAmplitudeScale(amplitudeElem.value); amplitudeElem.value=''" />
 
-          <input type="text" aria-label="Last name" class="form-control" />
+          <input #timeScaleElem type="text" aria-label="Scale" class="form-control" (keyup.enter)="setTimeScale(timeScaleElem.value); timeScaleElem.value=''" />
     </div>
       Amplitude Scale :  {{amplitudeScale}} uV
       Time Scale :{{timeScale}}
     </div>
-</div>
+  </div>
