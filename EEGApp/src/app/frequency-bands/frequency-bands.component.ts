@@ -1,19 +1,14 @@
 import { FreqBandsChartOptions, orderedLabels, orderedBandLabels, bandsDataSet } from './../shared/chartOptions';
 import { DataService } from './../shared/dataService';
-import { Component, ElementRef, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
+import { Component,  Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { SmoothieChart, TimeSeries } from 'smoothie';
+import { SmoothieChart  } from 'smoothie';
 import { channelNames, EEGSample, zipSamples } from 'muse-js';
-import { map, groupBy, filter, mergeMap, takeUntil } from 'rxjs/operators';
-import { bandpass } from '../shared/bandpass.filter';
+import {  takeUntil } from 'rxjs/operators';
 import { catchError, multicast } from 'rxjs/operators';
-import { saveAs } from 'file-saver';
-import {Chart} from 'chart.js';
-
-
-import { ChartService } from '../shared/chart.service';
-import {channelLabels,  bandLabels, backgroundColors, borderColors, spectraDataSet } from '../shared/chartOptions';
+import { Chart} from 'chart.js';
+import { backgroundColors, borderColors, spectraDataSet } from '../shared/chartOptions';
 import {
   bandpassFilter,
   epoch,
@@ -23,13 +18,6 @@ import {
 
 // If you have inner observable use mergemap to allow you to  subscribe to directly to it after applying map operation
 
-const chartStyles = {
-  wrapperStyle: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    padding: '20px'
-  }
-};
 
 export interface ISettings {
     cutOffLow: number;
@@ -45,19 +33,17 @@ export interface ISettings {
 
 function getSettings(): ISettings {
     return {
-      cutOffLow: 2,
-      cutOffHigh: 50,
-      interval: 100,
+      cutOffLow: 1,   // bandpass cutoff frequencies
+      cutOffHigh: 32,
+      interval: 500, // show data every 500 ms
       bins: 256,
-      duration: 1024,
-      srate: 256,
+      duration: 1048, // emit last one second of data
+      srate: 256,     // sampling rate
       name: 'Bands',
       secondsToSave: 10,
       nChannels: 4
     };
   }
-
-const samplingFrequency = 256;
 
 @Component({
   selector: 'app-frequency-bands',
@@ -65,7 +51,7 @@ const samplingFrequency = 256;
   styleUrls: ['frequency-bands.component.less'],
 })
 export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
-
+  // Declare input fields that users interact with
   @Input() data: Observable<EEGSample>;
   @Input() enableAux: boolean;
 
@@ -155,45 +141,3 @@ export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit
     this.chart.update();
   }
 }
-
-/*
- alpha: Array(5)
-0: 40.84046691651057
-1: 12.754179973427679
-2: 4.141376127546335
-3: 39.73700365380607
-4: 0
-length: 5
-__proto__: Array(0)
-beta: Array(5)
-0: 30.780450411331042
-1: 12.689490200792124
-2: 7.759923861193662
-3: 27.426959089819903
-4: 0
-length: 5
-__proto__: Array(0)
-delta: Array(5)
-0: 39.6124717185627
-1: 16.64392480378922
-2: 12.98435421752133
-3: 37.94931095294599
-4: 0
-length: 5
-__proto__: Array(0)
-gamma: Array(5)
-0: 15.806402962194925
-1: 12.784433759160533
-2: 3.2021110688840615
-3: 13.272424487884615
-4: 0
-length: 5
-__proto__: Array(0)
-theta: Array(5)
-0: 18.269318887490698
-1: 13.792054599966892
-2: 11.944001580018629
-3: 26.305896986529106
-4: 0
-length: 5
- */

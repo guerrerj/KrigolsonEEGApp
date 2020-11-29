@@ -1,100 +1,14 @@
-export const chartStyles = {
-  wrapperStyle: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    padding: '20px'
-  }
-};
+import { ChartOptions } from 'chart.js';
 
-export const emptyChannelData = {
-  ch0: {
-    datasets: [{}]
-  },
-  ch1: {
-    datasets: [{}]
-  },
-  ch2: {
-    datasets: [{}]
-  },
-  ch3: {
-    datasets: [{}]
-  }
-};
-
-export const emptyAuxChannelData = {
-  ch0: {
-    datasets: [{}]
-  },
-  ch1: {
-    datasets: [{}]
-  },
-  ch2: {
-    datasets: [{}]
-  },
-  ch3: {
-    datasets: [{}]
-  },
-  ch4: {
-    datasets: [{}]
-  }
-};
-
-export const emptySingleChannelData = {
-  ch1: {
-    datasets: [{}]
-  }
-};
-
-
-export const generalOptions = {
-  scales: {
-    xAxes: [
-      {
-        scaleLabel: {
-          display: true
-        }
-      }
-    ],
-    yAxes: [
-      {
-        scaleLabel: {
-          display: true
-        }
-      }
-    ]
-  },
-  elements: {
-    point: {
-      radius: 0
-    }
-  },
-  title: {
-    display: true,
-    text: 'Frequencies'
-  },
-  responsive: true,
-  tooltips: { enabled: false },
-  legend: { display: false }
-};
-
+/* This file contains the settings and options
+used by different chart providers (i.e chart.js and smoothie.js)
+for each application
+*/
 export const bandLabels = ['Alpha', 'Beta', 'Delta', 'Gamma', 'Theta'];
 export const orderedBandLabels = ['Delta', 'Theta', 'Alpha', 'Beta', 'Aux'];
 export const channelLabels = ['TP9', 'AF7', 'AF8', 'TP10', 'Aux'];
 export const orderedLabels = ['AF7', 'AF8', 'TP9', 'TP10', 'Aux'];
 
-
-export const options = {
-  scales: {
-      yAxes: [{
-        display: true,
-        ticks: {
-              beginAtZero: true
-          }
-      }],
-      xAxis: [{
-        display: true
-      }]
-}};
 
 export const backgroundColors: string[] = [
   'rgba(255, 99, 132, 0.2)',
@@ -151,14 +65,14 @@ export const bandsDataSet: IBandsDataSet = {
 
 export const spectraLabels = []
 
-export const FreqSpectraChartOptions = {
+export const FreqSpectraChartOptions: Partial<ChartOptions> = {
   events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
   tooltips: {
     enabled: true,
     intersect: true,
     mode: 'point',
     callbacks: {
-      label(tooltipItem: any, data) : number {
+      label(tooltipItem: any, data) : string {
           let label = data.datasets[tooltipItem.datasetIndex].label || '';
 
           if (label) {
@@ -193,7 +107,7 @@ export const FreqSpectraChartOptions = {
 };
 
 
-export const FreqBandsChartOptions = {
+export const FreqBandsChartOptions: Partial<ChartOptions> = {
   title: {
     display: true,
     text: 'Frequency Bands per Electrode'

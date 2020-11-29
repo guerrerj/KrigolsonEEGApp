@@ -36,7 +36,7 @@
         <span [hidden]="!(batteryLevel|async)" class="battery-level-indicator">
             <i class="fas fa-battery-full">Battery Level</i>{{batteryLevel|async|number:"1.0-0"}}%
         </span>
-        <i class="fab fa-bluetooth" *ngIf="connectedCopy" (click)="disconnect()" title="Disconnect">Bluetooth Connected</i>
+        <i class="fab fa-bluetooth" *ngIf="connectedCopy" (click)="disconnect()" title="Disconnect">Bluetooth Connected </i>
          <span aria-hidden="true">&times;</span>
       </div>
 
@@ -44,12 +44,6 @@
           <div class="row flex-auto">
               <button class="btn btn-warning connectBtn" *ngIf="!connectingCopy" (click)="data.connect()">Connect</button>
           </div>
-          <div *ngIf="!connectingCopy">
-            <div class="auxCheckBox form-group form-check">
-                  <input #enableAuxId type="checkbox" class="form-check-input"  (click)="data.setEnableAux()" aria-label="enableAux">
-                  <label class="form-check-label" for="enableAuxId">Enable Auxilary Electrode</label>
-            </div>
-        </div>
 
         <div *ngIf="connectingCopy">Connecting...
           <div class="spinner-border text-primary" role="status">

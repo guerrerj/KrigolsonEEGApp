@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "krigolsonecgapp-6815a": {
+      "hosting": {
+        "EEGApp": [
+          "krigolsonecgapp-6815a"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "krigolsonecgapp-6815a"
+  }
+}

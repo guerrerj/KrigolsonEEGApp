@@ -1,37 +1,28 @@
-import { Component, ChangeDetectorRef, OnInit, OnDestroy, Injectable } from '@angular/core';
+import { ChangeDetectorRef, OnDestroy, Injectable } from '@angular/core';
 
 import { MuseClient, MuseControlResponse, zipSamples, EEGSample } from 'muse-js';
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { map, share, tap, takeUntil } from 'rxjs/operators';
 
-import { XYZ } from '../head-view/head-view.component';
 
-// @Component({
-//   selector: 'app-connect-muse',
-//   templateUrl: './connect-muse.component.html',
-//   styleUrls: ['./connect-muse.component.less']
-// })
+/* This service is responsible for connecting the web app to the muse
+   and publishing the data to all the components in the project
+*/
 @Injectable()
 export class DataService implements  OnDestroy {
 
   constructor(private cd: ChangeDetectorRef) {
-    this.onInit();
+    this.onInit(); // Link muse connection status to service variable connected
   }
 
-  time = 2;
   connecting = new BehaviorSubject(false);
   connected = new BehaviorSubject(false);
   data: Observable<EEGSample> | null;
   batteryLevel: Observable<number> | null;
   controlResponses: Observable<MuseControlResponse>;
-  accelerometer: Observable<XYZ>;
   destroy = new Subject<void>();
 
   private muse = new MuseClient();
-
-  onUserInput(event: any): void {
-    this.time = event.target.value;
-  }
 
   onInit(): void {
     this.muse.connectionStatus.pipe(
@@ -48,32 +39,36 @@ export class DataService implements  OnDestroy {
     this.destroy.next();
   }
 
+  // main function that connects to muse
+  // Is run asynchronously and sets appropriate
+  // connected flags and subscribes data variable
   async connect(): Promise<any> {
     this.connecting.next(true);
 
     try {
       await this.muse.connect();
       this.controlResponses = this.muse.controlResponses;
-      await this.muse.start();
+      await this.muse.start(); // start taking readings from muse
+
+      // Subscribe to the data of the muse
       this.data = this.muse.eegReadings.pipe(
         zipSamples,
         takeUntil(this.destroy),
         tap(() => this.cd.detectChanges()),
         share()
       );
+
+      // Subscribe to the battery level of the muse
       this.batteryLevel = this.muse.telemetryData.pipe(
         takeUntil(this.destroy),
         map(t => t.batteryLevel)
-      );
-      this.accelerometer = this.muse.accelerometerData.pipe(
-        takeUntil(this.destroy),
-        map(reading => reading.samples[reading.samples.length - 1])
       );
       await this.muse.deviceInfo();
     } catch (err) {
       // Log errors
       console.log("Error is " , err);
     } finally {
+      // set connecting to false after connection is successful
       this.connecting.next(false);
     }
   }
@@ -82,11 +77,4 @@ export class DataService implements  OnDestroy {
     this.muse.disconnect();
   }
 
-  get enableAux(): boolean {
-    return this.muse.enableAux;
-  }
-
-  setEnableAux(): void {
-    this.muse.enableAux = !this.muse.enableAux;
-  }
 }

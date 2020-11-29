@@ -21,12 +21,12 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
 
   @Input() data: Observable<EEGSample>;
   @Input() enableAux: boolean;
-
-  filter = false;
-
+  //@Input() filter: boolean;
+  filter = true;
   channels = 4;
   canvases: SmoothieChart[];
-
+  minFreq = 1;
+  maxFreq = 30;
   readonly destroy = new Subject<void>();
   readonly channelNames = orderedLabels;
   readonly amplitudes = [];
@@ -111,7 +111,7 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
           }))),
         groupBy(sample => sample.electrode),
         mergeMap(group => {
-          const bandpassFilter = bandpass(samplingFrequency, 1, 30);
+          const bandpassFilter = bandpass(samplingFrequency, this.minFreq, this.maxFreq);
           const conditionalFilter = value => this.filter ? bandpassFilter(value) : value;
           return group.pipe(
             filter(sample => !isNaN(sample.value)),

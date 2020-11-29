@@ -17,10 +17,10 @@ export class RecorderComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
+  ngOnInit(): void {
   }
 
-  startRecording() {
+  startRecording(): void {
     this.recording = true;
     this.samples = [];
     this.subscription = this.data.subscribe(sample => {
@@ -28,17 +28,17 @@ export class RecorderComponent implements OnInit {
     });
   }
 
-  stopRecording() {
+  stopRecording(): void {
     this.recording = false;
     this.subscription.unsubscribe();
     this.saveToCsv(this.samples);
   }
 
-  get sampleCount() {
+  get sampleCount(): number {
     return this.samples.length;
   }
 
-  saveToCsv(samples: number[][]) {
+  saveToCsv(samples: number[][]): void {
     const a = document.createElement('a');
     const headers = ['time', ...channelNames].join(',');
     const csvData = headers + '\n' + samples.map(item => item.join(',')).join('\n');
