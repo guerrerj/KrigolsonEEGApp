@@ -1,28 +1,40 @@
-<div class="jumbotron jumbotron-fluid banner">
-  <h1 class="display-5">EEG Data Tool</h1>
-  <p class="lead">Observe and explore EEG Data</p>
-  <hr class="my-4">
-  <p class="lead">
-    <button type="button" class="btn btn-primary btn-lg" (click)="showConnectModal()">Connection</button>
-  </p>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">Sections</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
-        <a class="nav-item nav-link" routerLink="/time-series" routerLinkActive="active">EEG Data</a>
-        <a class="nav-item nav-link" routerLink="/frequency-bands" routerLinkActive="active">Frequency Bands</a>
-        <a class="nav-item nav-link" routerLink="/frequency-spectra" routerLinkActive="active">Frequency Spectrum</a>
-        <a class="nav-item nav-link" routerLink="/bci" routerLinkActive="active">BCI</a>
-        <a class="nav-item nav-link" routerLink="/ecg" routerLinkActive="active">ECG</a>
-        <a class="nav-item nav-link" routerLink="/erp" routerLinkActive="active">ERP</a>
+<div class="bodyContent">
+  <div class="jumbotron jumbotron-fluid banner">
+    <h1 class="display-5">EEG Data Tool</h1>
+       <p class="lead">Observe and explore EEG Data</p>
+    <hr class="my-4">
+    <p class="lead">
+      <button type="button" class="btn btn-primary btn-lg" (click)="showConnectModal()">Connection</button>
+    </p>
+  </div>
+     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="/home">Sections</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link active" href="/home">Home <span class="sr-only">(current)</span></a>
+          <a class="nav-item nav-link" routerLink="/time-series" routerLinkActive="active">EEG Data</a>
+          <a class="nav-item nav-link" routerLink="/frequency-bands" routerLinkActive="active">Frequency Bands</a>
+          <a class="nav-item nav-link" routerLink="/frequency-spectra" routerLinkActive="active">Frequency Spectrum</a>
+          <a class="nav-item nav-link" routerLink="/frequency-experiments" routerLinkActive="active">Frequency Experiments</a>
+          <a class="nav-item nav-link" routerLink="/bci" routerLinkActive="active">BCI</a>
+          <a class="nav-item nav-link" routerLink="/ecg" routerLinkActive="active">ECG</a>
+          <a class="nav-item nav-link" routerLink="/erp" routerLinkActive="active">ERP</a>
+        </div>
+      </div>
+    </nav>
+     <router-outlet></router-outlet>
+
+    <div class="container-fluid footerContent">
+      <div class="row">
+       <div class="col-3 mx-auto">
+         <p><b>Krigolson Lab UVic @ Copyright 2020</b></p>
+       </div>
       </div>
     </div>
-  </nav>
-  <router-outlet></router-outlet>
+
 </div>
 <ng-container #vc></ng-container>
 
@@ -36,8 +48,9 @@
         <span [hidden]="!(batteryLevel|async)" class="battery-level-indicator">
             <i class="fas fa-battery-full">Battery Level</i>{{batteryLevel|async|number:"1.0-0"}}%
         </span>
-        <i class="fab fa-bluetooth" *ngIf="connectedCopy" (click)="disconnect()" title="Disconnect">Bluetooth Connected </i>
-         <span aria-hidden="true">&times;</span>
+        <i class="fab fa-bluetooth" *ngIf="connectedCopy"  title="Disconnect">Bluetooth Connected
+         <span (click)="data.disconnect();closeConnectModal()" style="padding-left:5px;" aria-hidden="true">&times;</span>
+        </i>
       </div>
 
       <div class="modal-body">
@@ -45,7 +58,7 @@
               <button class="btn btn-warning connectBtn" *ngIf="!connectingCopy" (click)="data.connect()">Connect</button>
           </div>
 
-        <div *ngIf="connectingCopy">Connecting...
+        <div *ngIf="connectingCopy" style="text-align:center;">Connecting... <br/>
           <div class="spinner-border text-primary" role="status">
             <span class="sr-only">Loading...</span>
           </div>

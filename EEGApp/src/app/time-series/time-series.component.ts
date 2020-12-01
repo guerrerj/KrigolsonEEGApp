@@ -38,7 +38,7 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
   readonly maxAmpScale = 10000;
 
   readonly options = this.chartService.getChartSmoothieDefaults({
-    millisPerPixel: 3, // Speed at which chart pans by
+    millisPerPixel: 6, // Speed at which chart pans by
     maxValue: 500,
     minValue: -500
   });

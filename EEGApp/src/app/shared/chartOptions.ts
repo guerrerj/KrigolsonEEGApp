@@ -5,9 +5,9 @@ used by different chart providers (i.e chart.js and smoothie.js)
 for each application
 */
 export const bandLabels = ['Alpha', 'Beta', 'Delta', 'Gamma', 'Theta'];
-export const orderedBandLabels = ['Delta', 'Theta', 'Alpha', 'Beta', 'Aux'];
-export const channelLabels = ['TP9', 'AF7', 'AF8', 'TP10', 'Aux'];
-export const orderedLabels = ['AF7', 'AF8', 'TP9', 'TP10', 'Aux'];
+export const orderedBandLabels = ['Delta', 'Theta', 'Alpha', 'Beta'];
+export const channelLabels = ['TP9', 'AF7', 'AF8', 'TP10'];
+export const orderedLabels = ['AF7', 'AF8', 'TP9', 'TP10'];
 
 
 export const backgroundColors: string[] = [
@@ -127,3 +127,35 @@ export const FreqBandsChartOptions: Partial<ChartOptions> = {
       }]
   }
 };
+
+
+
+export interface ISettings {
+  cutOffLow: number;
+  cutOffHigh: number;
+  interval: number;
+  bins: number;
+  duration: number;
+  srate: number;
+  name: string;
+  secondsToSave: number;
+  nChannels: number;
+  sliceFFTLow?: number;
+  sliceFFTHigh?: number;
+}
+
+export function getSettings(): ISettings {
+  return {
+    cutOffLow: 1,
+    cutOffHigh: 32,
+    interval: 200,
+    bins: 256,
+    duration: 1024,
+    srate: 256,
+    name: '',
+    secondsToSave: 10,
+    nChannels: 4,
+    sliceFFTLow: 1,
+    sliceFFTHigh: 32
+  };
+}

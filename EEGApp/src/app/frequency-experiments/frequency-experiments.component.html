@@ -1,0 +1,15 @@
+  <div class="container frequency-experiments">
+    <div class="row">
+        <button class="btn btn-info" (click)="startRecording()" *ngIf="!recording">
+              Record
+             <fa-icon [icon]="faRecordVinyl"></fa-icon>
+         </button>
+         <div *ngIf="recording">
+          <button type="button" class="btn btn-primary" (click)="stopRecording()" *ngIf="recording">
+            <i class="far fa-stop-circle">stop</i>
+          </button> {{sampleCount}}
+        </div>
+    </div>
+  </div>
+
+

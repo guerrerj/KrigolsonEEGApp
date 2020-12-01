@@ -1,14 +1,10 @@
-:host {
-  display: flex;
-  position: relative;
-  font-family: Roboto, sans-serif;
-}
+@import '../app.component.less';
 
 .frequency-bands{
-  width: 100%;
   display: flex;
   flex-direction: column;
   margin-top: 2rem;
+  min-height: @minHeight;
 }
 
 #freq-bands-cont{
@@ -19,6 +15,8 @@
 #freqChart{
   width : 600px;
   height : 400px;
+  background-color: @componentColor;
+
 }
 
 .frequency-bands-channel {
@@ -78,3 +76,4 @@
 .graph-settings {
   margin-top: 8px;
 }
+

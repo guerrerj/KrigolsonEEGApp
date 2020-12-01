@@ -9,12 +9,14 @@ import { FrequencyBandsComponent } from './frequency-bands/frequency-bands.compo
 import { FrequencySpectraComponent } from './frequency-spectra/frequency-spectra.component';
 import { HeadViewComponent } from './head-view/head-view.component';
 import { HeadsetInfoComponent } from './headset-info/headset-info.component';
-import { RecorderComponent } from './recorder/recorder.component';
+import { FrequencyExperimentsComponent } from './frequency-experiments/frequency-experiments.component';
 import { TimeSeriesComponent } from './time-series/time-series.component';
 import { FormsModule } from '@angular/forms';
 import { BciComponent } from './bci/bci.component';
 import { ErpComponent } from './erp/erp.component';
 import { EcgComponent } from './ecg/ecg.component';
+import { HomeComponent } from './home/home.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -23,16 +25,18 @@ import { EcgComponent } from './ecg/ecg.component';
     FrequencySpectraComponent,
     HeadViewComponent,
     HeadsetInfoComponent,
-    RecorderComponent,
+    FrequencyExperimentsComponent,
     TimeSeriesComponent,
     BciComponent,
     ErpComponent,
     EcgComponent,
+    HomeComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule
+    FormsModule,
+    FontAwesomeModule
   ],
   providers: [DataService, ChartService],
   bootstrap: [AppComponent]

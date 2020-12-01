@@ -1,5 +1,5 @@
 import { DataService } from './../shared/dataService';
-import { backgroundColors, borderColors,  channelLabels, FreqSpectraChartOptions } from './../shared/chartOptions';
+import { backgroundColors, borderColors,  channelLabels, FreqSpectraChartOptions, getSettings, ISettings } from './../shared/chartOptions';
 import { Component, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
@@ -27,35 +27,6 @@ const chartStyles = {
   }
 };
 
-export interface ISettings {
-    cutOffLow: number;
-    cutOffHigh: number;
-    interval: number;
-    bins: number;
-    duration: number;
-    srate: number;
-    name: string;
-    secondsToSave: number;
-    nChannels: number;
-    sliceFFTLow: number;
-    sliceFFTHigh: number;
-}
-
-function getSettings(): ISettings {
-    return {
-      cutOffLow: 1,
-      cutOffHigh: 32,
-      interval: 200,
-      bins: 256,
-      duration: 1024,
-      srate: 256,
-      name: 'Frequency Spectrum',
-      secondsToSave: 10,
-      nChannels: 4,
-      sliceFFTLow: 1,
-      sliceFFTHigh: 32
-    };
-  }
 
 @Component({
   selector: 'app-frequency-spectra',
@@ -65,7 +36,6 @@ function getSettings(): ISettings {
 export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
 
   @Input() data: Observable<EEGSample>;
-  @Input() enableAux: boolean;
 
   settings: ISettings;
 
@@ -80,7 +50,8 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
   ngOnInit(): void {
     // Get settings for the charts
     this.settings = getSettings();
-    this.settings.nChannels = this.enableAux ? 5 : 4;
+    this.settings.name = 'Frequency Spectrum';
+
     // Get the chart options such as adding dummy data and configurations
     const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
     const dataSets = [];

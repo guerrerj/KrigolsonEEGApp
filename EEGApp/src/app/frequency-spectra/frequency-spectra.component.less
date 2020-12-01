@@ -1,3 +1,5 @@
+@import '../app.component.less';
+
 :host {
   display: flex;
   position: relative;
@@ -9,16 +11,19 @@
   display: flex;
   flex-direction: column;
   margin-top:2rem;
+  min-height: @minHeight;
 }
 
 #freq-spectra-cont{
   width:850px;
-  height:550px
+  height:550px;
 }
 
 #freqChart{
   width: 800px;
   height: 500px;
+  background-color: @componentColor;
+
 }
 
 .frequency-spectra-channel {
@@ -62,6 +67,7 @@
   width: 100%;
   height: calc(100vh / 8);
   background: none;
+
 }
 
 .frequency-spectra-amplitude {
