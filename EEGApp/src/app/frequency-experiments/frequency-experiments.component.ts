@@ -21,8 +21,7 @@ import {
   styleUrls: ['./frequency-experiments.component.less']
 })
 export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterViewChecked {
-  @Input() data;
-  ta: Observable<EEGSample>;
+  @Input() data: Observable<EEGSample>;
 
   faRecordVinyl = faRecordVinyl;
 
