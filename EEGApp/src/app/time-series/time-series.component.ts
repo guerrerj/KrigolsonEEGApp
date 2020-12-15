@@ -20,9 +20,7 @@ const samplingFrequency = 256;
 export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
 
   @Input() data: Observable<EEGSample>;
-  @Input() enableAux: boolean;
-  //@Input() filter: boolean;
-  filter = true;
+  @Input() filter: boolean;
   channels = 4;
   canvases: SmoothieChart[];
   minFreq = 1;
@@ -85,14 +83,22 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
     }
   }
 
-
+  setFilter(filterElem: any): void{
+    if (filterElem.checked){
+      this.filter = true;
+      filterElem.checked = true;
+    }else{
+      this.filter = false;
+      filterElem.checked = false;
+    }
+  }
 
   ngOnInit(): void {
     // Get the data from the service
-    this.channels = this.enableAux ? 5 : 4;
     this.canvases = Array(this.channels).fill(0).map(() => new SmoothieChart(this.options));
     this.lines = Array(this.channels).fill(0).map(() => new TimeSeries());
     this.addTimeSeries();
+    this.filter = true;
   }
 
   ngAfterViewInit(): void {

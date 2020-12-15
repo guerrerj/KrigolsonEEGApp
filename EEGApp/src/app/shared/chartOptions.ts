@@ -128,7 +128,30 @@ export const FreqBandsChartOptions: Partial<ChartOptions> = {
   }
 };
 
-
+export const FreqExperChartOptions: Partial<ChartOptions> = {
+   title: {
+     display: true,
+     text: 'Power'
+   },
+   responsiveAnimationDuration: 0,
+   scales: {
+     yAxes: [{
+       scaleLabel: {
+         display: true,
+         labelString: 'Power (uV)'
+       }
+     }],
+     xAxes: [{
+       scaleLabel: {
+         display: true,
+         labelString: 'Time (sample number)'
+       }
+     }]
+   },
+   legend: {
+     display: false
+   }
+};
 
 export interface ISettings {
   cutOffLow: number;
@@ -142,6 +165,7 @@ export interface ISettings {
   nChannels: number;
   sliceFFTLow?: number;
   sliceFFTHigh?: number;
+  maxFreq: number;
 }
 
 export function getSettings(): ISettings {
@@ -156,6 +180,7 @@ export function getSettings(): ISettings {
     secondsToSave: 10,
     nChannels: 4,
     sliceFFTLow: 1,
-    sliceFFTHigh: 32
+    sliceFFTHigh: 32,
+    maxFreq : 32
   };
 }

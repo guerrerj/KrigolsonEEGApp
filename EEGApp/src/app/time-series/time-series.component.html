@@ -1,31 +1,40 @@
-
-    <div class="container time-series ">
-      <div class="row">
-        <div class="col-6 time-series-channel" *ngFor="let canvas of canvases, let i = index">
-            <aside class="time-series-control">
-                <div class="time-series-number"
-                    [ngStyle]="{ 'background': colors[i].borderColor }">
-                    {{ channelNames[i] }}
-                </div>
-            </aside>
-            <canvas class="time-series-canvas"></canvas>
-            <aside class="time-series-amplitude"
-                [ngStyle]="{ 'background': colors[i].borderColor }">
-                {{ uVrms[i].toFixed(1) }} uVrms
-            </aside>
-          </div>
-      </div>
-
-      <div class="graph-settings">
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Amplitude Scale and Time Scale</span>
-            </div>
-            <input #amplitudeElem type="text" aria-label="Amplitude" class="form-control" (keyup.enter)="setAmplitudeScale(amplitudeElem.value); amplitudeElem.value=''" />
-
-            <input #timeScaleElem type="text" aria-label="Scale" class="form-control" (keyup.enter)="setTimeScale(timeScaleElem.value); timeScaleElem.value=''" />
-      </div>
-        Amplitude Scale :  {{amplitudeScale}} uV
-        Time Scale :{{timeScale}}
-      </div>
+<div class="container time-series">
+  <div class="row">
+    <div  class="col-6 time-series-channel" *ngFor="let canvas of canvases; let i = index" >
+      <aside class="time-series-control">
+        <div
+          class="time-series-number"
+          [ngStyle]="{ background: colors[i].borderColor }">
+          {{ channelNames[i] }}
+        </div>
+      </aside>
+      <canvas class="time-series-canvas"></canvas>
+      <aside
+        class="time-series-amplitude"
+        [ngStyle]="{ background: colors[i].borderColor }" >
+        {{ uVrms[i].toFixed(1) }} uVrms
+      </aside>
     </div>
+  </div>
+
+  <div class="row mt-2">
+    <form class="form-inline">
+      <div class="form-group mb-2">
+        <label for="amplitude" class="sr-only">Amplitude Scale </label>
+        <input #amplitudeElem type="text" class="form-control" id="amplitudeScaleId" placeholder="Amplitude Scale: {{amplitudeScale}}" (keyup.enter)="setAmplitudeScale(amplitudeElem.value); amplitudeElem.value = ''">
+      </div>
+      <div class="form-group mx-sm-3 mb-2">
+        <label for="timeScale" class="sr-only">Time Scale</label>
+           <input #timeScaleElem type="text" class="form-control" placeholder="TimeScale: {{timeScale}}" (keyup.enter)="setTimeScale(timeScaleElem.value); timeScaleElem.value = '' ">
+      </div>
+   </form>
+    <div class="form-check">
+      <input #filterElem class="form-check-input" type="checkbox" value="" id="filterId" (click)="setFilter(filterElem)" checked>
+      <label class="form-check-label" for="defaultCheck1">
+        Filter
+      </label>
+    </div>
+
+
+  </div>
+</div>

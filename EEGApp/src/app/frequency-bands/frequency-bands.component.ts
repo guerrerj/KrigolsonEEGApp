@@ -5,7 +5,7 @@ import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { SmoothieChart  } from 'smoothie';
 import { channelNames, EEGSample } from 'muse-js';
-import {  takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { catchError } from 'rxjs/operators';
 import { Chart} from 'chart.js';
 import { backgroundColors, borderColors, spectraDataSet } from '../shared/chartOptions';

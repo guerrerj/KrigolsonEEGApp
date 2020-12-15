@@ -41,7 +41,6 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
 
   readonly destroy = new Subject<void>();
   readonly channelNames = channelNames;
-  readonly maxFreq = 32;
 
   chart: Chart;
 
@@ -61,7 +60,7 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
           temp.backgroundColor = backgroundColors[i];
           temp.borderColor = borderColors[i];
           temp.label = channelLabels[i];
-          temp.data  = Array(this.maxFreq).fill(0);
+          temp.data  = Array(this.settings.maxFreq).fill(0);
           dataSets.push(temp);
         });
     // Instantiate the chart with the options
@@ -115,11 +114,11 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
       spectraData.psd[i].forEach((val: number) => this.chart.data.datasets[i].data.push(val));
 
       // add labels if they have not been added up until 31 labels
-      if (this.chart.data.labels.length < this.maxFreq - 1)
+      if (this.chart.data.labels.length < this.settings.maxFreq - 1)
       {
         this.chart.data.labels.length = 0;
         // get the freq labels that are below the maxFreq required
-        const freqs  = spectraData.freqs.filter((x: number) => x < this.maxFreq);
+        const freqs  = spectraData.freqs.filter((x: number) => x < this.settings.maxFreq);
         freqs.forEach((val: number) => this.chart.data.labels.push(val));
       }
     }
