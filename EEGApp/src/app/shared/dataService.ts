@@ -77,4 +77,20 @@ export class DataService implements  OnDestroy {
     this.muse.disconnect();
   }
 
+  // Used to calculate average of values in data
+  average(data: Array<number>): number {
+      const sum = data.reduce((sumTemp: number, value: number) => sumTemp + value, 0);
+      return sum / data.length;
+  }
+
+  // Standard deviation of values in values
+  standardDeviation(values: Array<number>): string{
+    const avg = this.average(values);
+    const squareDiffs = values.map((value: number) => Math.pow((value - avg), 2));
+    const avgSquareDiff = this.average(squareDiffs);
+    const stdDev = Math.sqrt(avgSquareDiff).toFixed(0);
+    return stdDev;
+  }
+
+
 }

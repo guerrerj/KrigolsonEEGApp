@@ -24,7 +24,7 @@ export class ChartService {
     }, overrides);
   }
 
-  getColors() {
+  getColors(): any {
     return [
       { borderColor: 'rgba(112,185,252,1)', backgroundColor: 'rgba(112,185,252,1)' },
       { borderColor: 'rgba(116,150,161,1)', backgroundColor: 'rgba(116,150,161,1)' },
@@ -38,16 +38,11 @@ export class ChartService {
   }
 
   // Function to count by n to something
-  customCount(start: number, end: number, step = 1) {
+  customCount(start: number, end: number, step = 1) : Array<number> {
     const len = Math.floor((end - start) / step) + 1;
     return Array(len).fill(0).map((_, idx) => start + idx * step);
   }
 
-// Average of values in data
-  average(data: Array<number>) {
-    const sum = data.reduce((sumTemp: number, value: number) => sumTemp + value, 0);
-    return sum / data.length;
-}
 
 
 
@@ -74,13 +69,5 @@ export class ChartService {
   )
 } */
 
-// Standard deviation of values in values
-  standardDeviation(values: Array<number>){
-       const avg = this.average(values);
-       const squareDiffs = values.map((value: number) => Math.pow((value - avg), 2));
-       const avgSquareDiff = this.average(squareDiffs);
-       const stdDev = Math.sqrt(avgSquareDiff).toFixed(0);
-       return stdDev;
-}
 
 }

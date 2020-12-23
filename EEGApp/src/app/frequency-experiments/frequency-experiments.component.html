@@ -13,6 +13,7 @@
             {{selectedElectrode}}
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
+            <button class="dropdown-item" type="button" (click)="setElectrode('All')">All</button>
             <button class="dropdown-item" type="button" (click)="setElectrode('AF7')">AF7</button>
             <button class="dropdown-item" type="button" (click)="setElectrode('AF8')">AF8</button>
             <button class="dropdown-item" type="button" (click)="setElectrode('TP9')">TP9</button>
@@ -55,7 +56,7 @@
             <div *ngIf="isRecording1">
               <button type="button" class="btn btn-primary" (click)="stopRecording()" *ngIf="isRecording">
                 <i class="far fa-stop-circle">stop</i>
-              </button> {{sample1Count}}
+              </button> {{sample1Count}} Samples
             </div>
             <div>
               <canvas id="freqChartExperiments1"></canvas>
@@ -70,7 +71,7 @@
             <div *ngIf="isRecording2">
               <button type="button" class="btn btn-primary" (click)="stopRecording()" *ngIf="isRecording">
                 <i class="far fa-stop-circle">stop</i>
-              </button> {{sample2Count}}
+              </button> {{sample2Count}}  Samples
             </div>
             <div>
               <canvas id="freqChartExperiments2"></canvas>

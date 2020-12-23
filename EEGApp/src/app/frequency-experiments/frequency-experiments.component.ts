@@ -48,7 +48,7 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
 
   private subscription: Subscription;
 
-  constructor(private incomingData: DataService) { }
+  constructor(private inDataService: DataService) { }
 
   ngOnInit(): void {
     this.settings = getSettings();
@@ -81,9 +81,9 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
 
   ngAfterViewChecked(): void {
     // Check for incoming data
-    if (this.incomingData.data != null && this.data == null)
+    if (this.inDataService.data != null && this.data == null)
     {
-      this.incomingData.data.pipe(samples => this.data = samples);
+      this.inDataService.data.pipe(samples => this.data = samples);
     }
     // Check if is warning add timeout to reset
     if (this.isWarning){
@@ -171,13 +171,23 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
   }
 
   // Used to get a specific set of data from the samples
-  getcleanedSampleValues(useDefaults = true, band = '', idx = -1): number[] {
+  getcleanedSampleValues(band = ''): number[] {
     const cleanedDataSet = [];
+    // In case all electrodes were selected
+    const all = -1;
     (this.isSamples1) ?
-        this.samples1.forEach(samp =>  cleanedDataSet.push(
-          samp[(useDefaults) ? this.selectedBand : band ][ (useDefaults) ? this.selectedElectrodeIdx : idx])) :
-        this.samples2.forEach(samp => cleanedDataSet.push(
-          samp[(useDefaults) ? this.selectedBand : band ][ (useDefaults) ? this.selectedElectrodeIdx : idx]));
+        // push samples 1 data
+        this.samples1.forEach((samp: any) =>  cleanedDataSet.push((this.selectedElectrodeIdx === all) ?
+              // Get average value in case of all electrodes are selected
+              this.inDataService.average(samp[(band.length > 1) ? band : this.selectedBand])          :
+                    samp[(band.length > 1) ? band : this.selectedBand][this.selectedElectrodeIdx]))
+         :
+        // push samples 2 data
+        this.samples2.forEach((samp: any) => cleanedDataSet.push((this.selectedElectrodeIdx === all) ?
+             // Get average value in case all electrodes are selected
+              this.inDataService.average(samp[(band.length > 1) ? band : this.selectedBand ]) :
+                    samp[(band.length > 1) ? band : this.selectedBand ][this.selectedElectrodeIdx]
+          ));
     return cleanedDataSet;
   }
 
@@ -195,7 +205,7 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
   setElectrode(val: string): void{
     this.selectedElectrode = val;
     // update electrode index used for
-    this.selectedElectrodeIdx = channelLabels.indexOf(val);
+    this.selectedElectrodeIdx = (val.toLowerCase() === 'all') ? -1 : channelLabels.indexOf(val);
   }
 
   // Used to set the chosen frequency band by user
@@ -237,7 +247,7 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
   // Used to save a set of samples to csv
   saveToCsv(): void {
     const samples = [];
-    orderedBandLabels.forEach(nam => samples.push(this.getcleanedSampleValues(false, nam.toLowerCase(), this.selectedElectrodeIdx)));
+    orderedBandLabels.forEach(nam => samples.push(this.getcleanedSampleValues(nam.toLowerCase())));
     const a = document.createElement('a');
     let csvData = orderedBandLabels[0] + ',' + samples[0].join(',') + '\n';
     csvData += orderedBandLabels[1] + ',' + samples[1].join(',') + '\n';
