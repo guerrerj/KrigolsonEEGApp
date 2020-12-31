@@ -45,6 +45,7 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   readonly channelNames = channelNames;
 
   chart: Chart;
+  chart2: Chart;
 
   constructor(private incomingData: DataService) {}
 
@@ -77,9 +78,16 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
       });
 
 
-    // const canvas = document.getElementById('channelAve') as HTMLCanvasElement;
+     const canvas2 = document.getElementById('channelAve') as HTMLCanvasElement;
+     const dataSets2 = Array(10).fill(0);
 
-
+     this.chart2 = new Chart(canvas2, {
+          type: 'bar',
+          data: {
+            datasets: dataSets2
+          },
+        options: FreqSpectraChartOptions
+      });
   }
 
   ngAfterViewInit(): void {
@@ -144,10 +152,14 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   	for (let i = 0; i < this.settings.nChannels; i++){
   		if(i==0){   // i=0 freqency at 8 hz
   			// console.log('psd[',i,'][0]:',spectraData.psd[i][0]);	
+  			
 		 	this.Tp9Freq8.shift();
 		 	this.Tp9Freq8.push(spectraData.psd[i][0]);
 			this.Tp9Freq8Ave.shift();
 			this.Tp9Freq8Ave.push(this.average(this.Tp9Freq8));
+
+			this.chart2.data.datasets.shift();
+			this.chart2.data.datasets.push(this.average(this.Tp9Freq8));
 			std=this.standardDeviation(this.Tp9Freq8Ave);
 		}	  		
   	}
