@@ -1,5 +1,5 @@
 import { DataService } from './../shared/dataService';
-import { backgroundColors, borderColors,  channelLabels, FreqSpectraChartOptions, getSettings, ISettings } from './../shared/bciChartOptions';
+import { backgroundColors, borderColors,  channelLabels, FreqSpectraChartOptions, getSettings, ISettings } from './../shared/ChartOptions';
 import { Component, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
@@ -8,6 +8,8 @@ import { takeUntil } from 'rxjs/operators';
 import { catchError } from 'rxjs/operators';
 import { Chart } from 'chart.js';
 
+ import { bciBackgroundColors, bciBorderColors,  bciChannelLabels, bciFreqSpectraChartOptions, 
+	      bciGetSettings, bciSettings,bciSpectraDataSet } from './../shared/bciChartOptions';
 
 import {spectraDataSet } from '../shared/chartOptions';
 import {
@@ -27,7 +29,6 @@ const chartStyles = {
   }
 };
 
-
 @Component({
   selector: 'app-bci',
   templateUrl: './bci.component.html',
@@ -40,12 +41,13 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   @Input() data: Observable<EEGSample>;
 
   settings: ISettings;
+  bciSettings: bciSettings;
 
   readonly destroy = new Subject<void>();
   readonly channelNames = channelNames;
 
   chart: Chart;
-  chart2: Chart;
+  bciChart: Chart;
 
   constructor(private incomingData: DataService) {}
 
@@ -53,6 +55,8 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
     // Get settings for the charts
     this.settings = getSettings();
     this.settings.name = 'Frequency Spectrum';
+    this.bciSettings = getSettings();
+    this.bciSettings.name='BCI Control bar';
 
     // Get the chart options such as adding dummy data and configurations
     const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
@@ -66,7 +70,6 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
           temp.data  = Array(this.settings.maxFreq).fill(0);
           dataSets.push(temp);
         });
-
     // Instantiate the chart with the options
     this.chart = new Chart(canvas, {
           type: 'line',
@@ -77,16 +80,25 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
         options: FreqSpectraChartOptions
       });
 
+    const canvas2 = document.getElementById('bciChart') as HTMLCanvasElement;
+    const bciDataSets = [];
 
-     const canvas2 = document.getElementById('channelAve') as HTMLCanvasElement;
-     const dataSets2 = Array(10).fill(0);
+    Array(this.bciSettings.nChannels).fill(0).map((ch, i) => {
+          const temp =  Object.assign({}, bciSpectraDataSet);
+          temp.backgroundColor = backgroundColors[i];
+          temp.borderColor = borderColors[i];
+          temp.label = channelLabels[i];
+          temp.data  = Array(10).fill(0);
+          bciDataSets.push(temp);
+        });
 
-     this.chart2 = new Chart(canvas2, {
+    this.bciChart = new Chart(canvas2, {
           type: 'bar',
           data: {
-            datasets: dataSets2
-          },
-        options: FreqSpectraChartOptions
+            datasets: [bciDataSets[0],bciDataSets[1],bciDataSets[2],bciDataSets[3]],
+            labels: [],
+        },
+        options: bciFreqSpectraChartOptions
       });
   }
 
@@ -143,30 +155,47 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
     this.chart.update();
   }
 
-  channelData=[[],[],[],[],[]];
+  channelData=[[],[],[],[]];
   Tp9Freq8= Array(10).fill(0);
   Tp9Freq8Ave= Array(10).fill(0);
+
   addChannelData (spectraData: any): void {
   	console.log('spectraData: ', spectraData);
   	var ave,std;
   	for (let i = 0; i < this.settings.nChannels; i++){
-  		if(i==0){   // i=0 freqency at 8 hz
-  			// console.log('psd[',i,'][0]:',spectraData.psd[i][0]);	
-  			
-		 	this.Tp9Freq8.shift();
-		 	this.Tp9Freq8.push(spectraData.psd[i][0]);
-			this.Tp9Freq8Ave.shift();
-			this.Tp9Freq8Ave.push(this.average(this.Tp9Freq8));
 
-			this.chart2.data.datasets.shift();
-			this.chart2.data.datasets.push(this.average(this.Tp9Freq8));
-			std=this.standardDeviation(this.Tp9Freq8Ave);
-		}	  		
-  	}
-  	//display the average as bar chart 
-  	console.log('TP9Freq8:  ',this.Tp9Freq8);
-  	console.log('Tp9Freq8Ave:  ',this.Tp9Freq8Ave);
+
+  		this.bciChart.data.datasets[i].data.length=0;
+		//spectraData.psd[i].forEach((val: number) => this.bciChart.data.datasets[i].data.push(val));
+  		// spectraData.psd[i].forEach(function(val: number) {
+  		       //this.bciChart.data.datasets[i].data.push(spectraData.psd[i][8]);
+
+  			if(i==0){   // i=0 freqency at 8 hz	  	
+  				console.log('psd[',i,'][8]',spectraData.psd[i][8]);		
+			 	this.Tp9Freq8.shift();
+			 	this.Tp9Freq8.push(spectraData.psd[i][8]);
+			 	console.log('TP9Freq8:     ',this.Tp9Freq8);
+				this.Tp9Freq8Ave.shift();
+				this.Tp9Freq8Ave.push(this.average(this.Tp9Freq8));
+			 	console.log('Tp9Freq8Ave:     ',this.Tp9Freq8Ave);
+				// this.bciChart.data.datasets[i].data.shift();
+				this.bciChart.data.datasets[i].data.push(this.average(this.Tp9Freq8));
+				console.log('datasets',i,'.data:  ',this.bciChart.data.datasets[i].data);
+
+				// this.bciChart.data.datasets[0].data.push(this.average(this.Tp9Freq8));
+				std=this.standardDeviation(this.Tp9Freq8Ave);
+//study chart make moving chart by time
+				
+			}	  		
+  			
+  		// }); 
+  	// display the average as bar chart 
+  	// console.log('TP9Freq8:     ',this.Tp9Freq8);
+  	// console.log('Tp9Freq8Ave:  ',this.Tp9Freq8Ave);
   	console.log('std: ',std);
+  	}
+  	
+  	this.bciChart.update();
   }
 
 

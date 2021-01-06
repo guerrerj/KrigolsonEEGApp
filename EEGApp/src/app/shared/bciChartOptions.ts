@@ -4,13 +4,18 @@ import { ChartOptions } from 'chart.js';
 used by different chart providers (i.e chart.js and smoothie.js)
 for each application
 */
-export const bandLabels = ['Alpha', 'Beta', 'Delta', 'Gamma', 'Theta'];
-export const orderedBandLabels = ['Delta', 'Theta', 'Alpha', 'Beta'];
-export const channelLabels = ['TP9', 'AF7', 'AF8', 'TP10'];
-export const orderedLabels = ['AF7', 'AF8', 'TP9', 'TP10'];
+// export const bandLabels = ['Alpha', 'Beta', 'Delta', 'Gamma', 'Theta'];
+// export const orderedBandLabels = ['Delta', 'Theta', 'Alpha', 'Beta'];
+// export const channelLabels = ['TP9', 'AF7', 'AF8', 'TP10'];
+// export const orderedLabels = ['AF7', 'AF8', 'TP9', 'TP10'];
+
+export const bciBandLabels = ['Alpha', 'Beta', 'Delta', 'Gamma', 'Theta'];
+export const bciOrderedBandLabels = ['Delta', 'Theta', 'Alpha', 'Beta'];
+export const bciChannelLabels = ['TP9', 'AF7', 'AF8', 'TP10'];
+export const bciOrderedLabels = ['AF7', 'AF8', 'TP9', 'TP10'];
 
 
-export const backgroundColors: string[] = [
+export const bciBackgroundColors: string[] = [
   'rgba(255, 99, 132, 0.2)',
   'rgba(54, 162, 235, 0.2)',
   'rgba(255, 206, 26, 0.2)',
@@ -18,7 +23,7 @@ export const backgroundColors: string[] = [
   'rgba(153, 102, 255, 0.2)',
 ];
 
-export const borderColors: string[] = ['rgba(255, 99, 132, 1)',
+export const bciBorderColors: string[] = ['rgba(255, 99, 132, 1)',
 'rgba(54, 162, 235, 1)',
 'rgba(255, 206, 26, 1)',
 'rgba(75, 92, 192, 1)',
@@ -34,7 +39,7 @@ interface ISpectraDataSet {
   fill: any;
   lineTension: number;
 }
-export const spectraDataSet: ISpectraDataSet = {
+export const bciSpectraDataSet: ISpectraDataSet = {
   data: [],
   backgroundColor: '' ,
   borderColor: '',
@@ -53,7 +58,7 @@ interface IBandsDataSet {
   fill: any;
   lineTension: number;
 }
-export const bandsDataSet: IBandsDataSet = {
+export const bciBandsDataSet: IBandsDataSet = {
   data: [],
   backgroundColor: '' ,
   borderColor: '',
@@ -62,10 +67,9 @@ export const bandsDataSet: IBandsDataSet = {
   label: [],
   lineTension: 0.4
 };
-
-export const spectraLabels = []
-
-export const FreqSpectraChartOptions: Partial<ChartOptions> = {
+  
+   
+export const bciFreqSpectraChartOptions: Partial<ChartOptions> = {
   events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
   tooltips: {
     enabled: true,
@@ -88,14 +92,14 @@ export const FreqSpectraChartOptions: Partial<ChartOptions> = {
   },
   responsiveAnimationDuration: 0,
   title: {
-    display: true,
+    display: false,
     text: 'Frequency Spectra per Electrode'
   },
   scales: {
     yAxes: [{
       scaleLabel: {
       display: true,
-      labelString: 'Power (uV)'
+      labelString: '10 Average Power (uV)'
     }}],
     xAxes: [{
       scaleLabel: {
@@ -107,7 +111,7 @@ export const FreqSpectraChartOptions: Partial<ChartOptions> = {
 };
 
 
-export const FreqBandsChartOptions: Partial<ChartOptions> = {
+export const bciFreqBandsChartOptions: Partial<ChartOptions> = {
   title: {
     display: true,
     text: 'Frequency Bands per Electrode'
@@ -128,7 +132,7 @@ export const FreqBandsChartOptions: Partial<ChartOptions> = {
   }
 };
 
-export const FreqExperChartOptions: Partial<ChartOptions> = {
+export const bciFreqExperChartOptions: Partial<ChartOptions> = {
    title: {
      display: true,
      text: 'Power'
@@ -153,7 +157,7 @@ export const FreqExperChartOptions: Partial<ChartOptions> = {
    }
 };
 
-export interface ISettings {
+export interface bciSettings {
   cutOffLow: number;
   cutOffHigh: number;
   interval: number;
@@ -168,7 +172,7 @@ export interface ISettings {
   maxFreq: number;
 }
 
-export function getSettings(): ISettings {
+export function bciGetSettings(): bciSettings {
   return {
     cutOffLow: 8,
     cutOffHigh: 12,
@@ -181,6 +185,6 @@ export function getSettings(): ISettings {
     nChannels: 4,
     sliceFFTLow: 8,
     sliceFFTHigh: 12,
-    maxFreq : 13
+    maxFreq : 10
   };
 }
