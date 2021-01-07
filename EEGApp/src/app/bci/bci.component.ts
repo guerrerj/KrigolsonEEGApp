@@ -1,5 +1,5 @@
-import { DataService } from './../shared/dataService';
-import { backgroundColors, borderColors,  channelLabels, FreqSpectraChartOptions, getSettings, ISettings } from './../shared/ChartOptions';
+import { DataService } from '../shared/dataService';
+import { backgroundColors, borderColors,  channelLabels, FreqSpectraChartOptions, getSettings, ISettings, spectraDataSet } from '../shared/chartOptions';
 import { Component, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
@@ -8,10 +8,8 @@ import { takeUntil } from 'rxjs/operators';
 import { catchError } from 'rxjs/operators';
 import { Chart } from 'chart.js';
 
-import { bciBackgroundColors, bciBorderColors,  bciChannelLabels, bciFreqSpectraChartOptions, 
-	      bciGetSettings, bciSettings,bciSpectraDataSet } from './../shared/bciChartOptions';
-
-import {spectraDataSet } from '../shared/chartOptions';
+import { bciBackgroundColors, bciBorderColors,  bciChannelLabels, bciFreqSpectraChartOptions,
+	      bciGetSettings, bciSettings,bciSpectraDataSet } from '../shared/bciChartOptions';
 import {
   bandpassFilter,
   epoch,
@@ -49,6 +47,9 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   chart: Chart;
   bciChart: Chart;
 
+  freq8: Array<Array<number>>;
+  freq8Avg: Array<Array<number>>;
+
   constructor(private incomingData: DataService) {}
 
   ngOnInit(): void {
@@ -57,6 +58,9 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
     this.settings.name = 'Frequency Spectrum';
     this.bciSettings = getSettings();
     this.bciSettings.name='BCI Control bar';
+
+    this.freq8 = Array(4).fill(0).map(ch => new Array(10).fill(0));
+    this.freq8Avg = Array(4).fill(0).map(ch => new Array(10).fill(0));
 
     // Get the chart options such as adding dummy data and configurations
     const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
@@ -95,7 +99,7 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
     this.bciChart = new Chart(canvas2, {
           type: 'bar',
           data: {
-            datasets: [bciDataSets[0],bciDataSets[1],bciDataSets[2],bciDataSets[3]],
+            datasets: bciDataSets,
             labels: [],
         },
         options: bciFreqSpectraChartOptions
@@ -128,7 +132,7 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
         .subscribe(data => {
           this.addData(data);
           this.addChannelData(data);
-         
+
         });
       }
   }
@@ -155,69 +159,40 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
     this.chart.update();
   }
 
-  channelData=[[],[],[],[]];
-  Tp9Freq8= Array(10).fill(0);
-  Tp9Freq8Ave= Array(10).fill(0);
 
-  addChannelData (spectraData: any): void {
-  	console.log('spectraData: ', spectraData);
-  	var ave,std;
-  	for (let i = 0; i < this.settings.nChannels; i++){
+  addChannelData(spectraData: any): void {
+    //console.log('spectraData: ', spectraData);
+    let std: string;
 
+    for (let i = 0; i < this.settings.nChannels; i++) {
+      // this.bciChart.data.datasets[i].data.length=0;
+      // spectraData.psd[i].forEach((val: number) => this.bciChart.data.datasets[i].data.push(val));
+      // spectraData.psd[i].forEach(function(val: number) {
+      // this.bciChart.data.datasets[i].data.push(spectraData.psd[i][8]);
 
-  		// this.bciChart.data.datasets[i].data.length=0;
-		//spectraData.psd[i].forEach((val: number) => this.bciChart.data.datasets[i].data.push(val));
-  		// spectraData.psd[i].forEach(function(val: number) {
-  		       //this.bciChart.data.datasets[i].data.push(spectraData.psd[i][8]);
+      // console.log('psd[', i, '][8]', spectraData.psd[i][8]);
+      this.freq8[i].shift();
+      this.freq8[i].push(spectraData.psd[i][8]);
+      // console.log('TP9Freq8:     ', this.freq8[i]);
+      this.freq8Avg[i].shift();
+      this.freq8Avg[i].push(this.incomingData.average(this.freq8[i]));
+      // console.log('freq8Avg:     ', this.freq8Avg[i]);
+      this.bciChart.data.datasets[i].data.shift();
+      this.bciChart.data.datasets[i].data.push(this.incomingData.average(this.freq8[i]));
+      // console.log('datasets', i, '.data:  ', this.bciChart.data.datasets[i].data);
 
-  			if(i==0){   // i=0 freqency at 8 hz	  	
-  				console.log('psd[',i,'][8]',spectraData.psd[i][8]);		
-			 	this.Tp9Freq8.shift();
-			 	this.Tp9Freq8.push(spectraData.psd[i][8]);
-			 	console.log('TP9Freq8:     ',this.Tp9Freq8);
-				this.Tp9Freq8Ave.shift();
-				this.Tp9Freq8Ave.push(this.average(this.Tp9Freq8));
-			 	console.log('Tp9Freq8Ave:     ',this.Tp9Freq8Ave);
-				this.bciChart.data.datasets[i].data.shift();
-				this.bciChart.data.datasets[i].data.push(this.average(this.Tp9Freq8));
-				console.log('datasets',i,'.data:  ',this.bciChart.data.datasets[i].data);
+      // this.bciChart.data.datasets[0].data.push(this.average(this.freq8));
+      std = this.incomingData.standardDeviation(this.freq8Avg[i]);
+      // study chart make moving chart by time
 
-				// this.bciChart.data.datasets[0].data.push(this.average(this.Tp9Freq8));
-				std=this.standardDeviation(this.Tp9Freq8Ave);
-//study chart make moving chart by time
-				
-			}	  		
-  			
-  		// }); 
-  	// display the average as bar chart 
-  	// console.log('TP9Freq8:     ',this.Tp9Freq8);
-  	// console.log('Tp9Freq8Ave:  ',this.Tp9Freq8Ave);
-  	console.log('std: ',std);
-  	}
-  	
-  	this.bciChart.update();
+    }
+
+    // display the average as bar chart
+    // console.log('TP9Freq8:     ',this.freq8);
+    // console.log('freq8Avg:  ',this.freq8Avg);
+    console.log('std: ', std);
+
+    this.bciChart.update();
   }
-
-
-
-
-
-
-    // Used to calculate average of values in data
-  average(data: Array<number>): number {
-      const sum = data.reduce((sumTemp: number, value: number) => sumTemp + value, 0);
-      return sum / data.length;
-  }
-
-  // Standard deviation of values in values
-  standardDeviation(values: Array<number>): string{
-    const avg = this.average(values);
-    const squareDiffs = values.map((value: number) => Math.pow((value - avg), 2));
-    const avgSquareDiff = this.average(squareDiffs);
-    const stdDev = Math.sqrt(avgSquareDiff).toFixed(0);
-    return stdDev;
-  }
-
-
 }
 
