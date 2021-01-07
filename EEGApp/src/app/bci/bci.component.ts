@@ -8,7 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { catchError } from 'rxjs/operators';
 import { Chart } from 'chart.js';
 
- import { bciBackgroundColors, bciBorderColors,  bciChannelLabels, bciFreqSpectraChartOptions, 
+import { bciBackgroundColors, bciBorderColors,  bciChannelLabels, bciFreqSpectraChartOptions, 
 	      bciGetSettings, bciSettings,bciSpectraDataSet } from './../shared/bciChartOptions';
 
 import {spectraDataSet } from '../shared/chartOptions';
@@ -165,7 +165,7 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   	for (let i = 0; i < this.settings.nChannels; i++){
 
 
-  		this.bciChart.data.datasets[i].data.length=0;
+  		// this.bciChart.data.datasets[i].data.length=0;
 		//spectraData.psd[i].forEach((val: number) => this.bciChart.data.datasets[i].data.push(val));
   		// spectraData.psd[i].forEach(function(val: number) {
   		       //this.bciChart.data.datasets[i].data.push(spectraData.psd[i][8]);
@@ -178,7 +178,7 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
 				this.Tp9Freq8Ave.shift();
 				this.Tp9Freq8Ave.push(this.average(this.Tp9Freq8));
 			 	console.log('Tp9Freq8Ave:     ',this.Tp9Freq8Ave);
-				// this.bciChart.data.datasets[i].data.shift();
+				this.bciChart.data.datasets[i].data.shift();
 				this.bciChart.data.datasets[i].data.push(this.average(this.Tp9Freq8));
 				console.log('datasets',i,'.data:  ',this.bciChart.data.datasets[i].data);
 
