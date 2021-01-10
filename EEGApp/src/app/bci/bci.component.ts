@@ -100,7 +100,7 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
           type: 'bar',
           data: {
             datasets: bciDataSets,
-            labels: [],
+            labels: [1,2,3,4,5,6,7,8,9,10],
         },
         options: bciFreqSpectraChartOptions
       });
@@ -163,36 +163,46 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   addChannelData(spectraData: any): void {
     //console.log('spectraData: ', spectraData);
     let std: string;
+    let average: number;
+
+    let counter: number;
+    let switcher: number;
 
     for (let i = 0; i < this.settings.nChannels; i++) {
-      // this.bciChart.data.datasets[i].data.length=0;
-      // spectraData.psd[i].forEach((val: number) => this.bciChart.data.datasets[i].data.push(val));
-      // spectraData.psd[i].forEach(function(val: number) {
-      // this.bciChart.data.datasets[i].data.push(spectraData.psd[i][8]);
+	      // this.bciChart.data.datasets[i].data.length=0;
+	      // spectraData.psd[i].forEach((val: number) => this.bciChart.data.datasets[i].data.push(val));
+	      // spectraData.psd[i].forEach(function(val: number) {
+	      // this.bciChart.data.datasets[i].data.push(spectraData.psd[i][8]);
+	      // console.log('psd[', i, '][8]', spectraData.psd[i][8]);
+	      this.freq8[i].shift();
+	      this.freq8[i].push(spectraData.psd[i][8]);
+	      // console.log('TP9Freq8:     ', this.freq8[i]);
+	      this.freq8Avg[i].shift();
+	      this.freq8Avg[i].push(this.incomingData.average(this.freq8[i]));
+	      // console.log('freq8Avg:     ', this.freq8Avg[i]);
+	      this.bciChart.data.datasets[i].data.shift();
+	      this.bciChart.data.datasets[i].data.push(this.incomingData.average(this.freq8[i]));
+	      console.log('datasets', i, '.data:  ', this.bciChart.data.datasets[i].data);
+	      console.log('this.bciChart.data.datasets[i].data:  ',this.bciChart.data.datasets[i].data);
+	      average = this.incomingData.average(this.bciChart.data.datasets[i].data);
 
-      // console.log('psd[', i, '][8]', spectraData.psd[i][8]);
-      this.freq8[i].shift();
-      this.freq8[i].push(spectraData.psd[i][8]);
-      // console.log('TP9Freq8:     ', this.freq8[i]);
-      this.freq8Avg[i].shift();
-      this.freq8Avg[i].push(this.incomingData.average(this.freq8[i]));
-      // console.log('freq8Avg:     ', this.freq8Avg[i]);
-      this.bciChart.data.datasets[i].data.shift();
-      this.bciChart.data.datasets[i].data.push(this.incomingData.average(this.freq8[i]));
-      // console.log('datasets', i, '.data:  ', this.bciChart.data.datasets[i].data);
-
-      // this.bciChart.data.datasets[0].data.push(this.average(this.freq8));
-      std = this.incomingData.standardDeviation(this.freq8Avg[i]);
-      // study chart make moving chart by time
+	      // this.bciChart.data.datasets[0].data.push(this.average(this.freq8));
+	      std = this.incomingData.standardDeviation(this.freq8Avg[i]);
+	      // study chart make moving chart by time
+	        console.log('std',i,': ', std);
+	    	console.log('average ',i,':  ',average);
+	    	
+    }
+	 	// display the average as bar chart
+	    // console.log('TP9Freq8:     ',this.freq8);
+	    // console.log('freq8Avg:  ',this.freq8Avg);
+    	this.bciChart.update();
 
     }
 
-    // display the average as bar chart
-    // console.log('TP9Freq8:     ',this.freq8);
-    // console.log('freq8Avg:  ',this.freq8Avg);
-    console.log('std: ', std);
-
-    this.bciChart.update();
-  }
+   
+    
+  
 }
+
 
