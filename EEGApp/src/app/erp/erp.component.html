@@ -1,5 +1,11 @@
   <div class="container erp">
-    <div class="row">
-
-    </div>
+    <div class="row justify-content-center">
+        <div class="col-12 text-center">
+           <h3>Oddball Game</h3>
+        </div>
+        <canvas #oddBallCanvas width="600" height="400" id="gameCanvas"></canvas>
+     </div>
+     <div class="row justify-content-center mt-2" ng-if="playing == false">
+          <button type="button" class="btn btn-secondary" (click)="animate()">Play</button>
+     </div>
   </div>
