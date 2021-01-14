@@ -68,7 +68,49 @@ export const bciBandsDataSet: IBandsDataSet = {
   lineTension: 0.4
 };
   
-   
+export const bciFreqStackedChartOptions: Partial<ChartOptions> = {
+  events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+  tooltips: {
+    enabled: true,
+    intersect: true,
+    mode: 'point',
+    callbacks: {
+      label(tooltipItem: any, data) : string {
+          let label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+          if (label) {
+              label += ': ';
+          }
+          label += Math.round(tooltipItem.yLabel * 100) / 100;
+          return label;
+      }
+    }
+  },
+  hover: {
+    animationDuration: 0
+  },
+  responsiveAnimationDuration: 0,
+  title: {
+    display: false,
+    text: 'Frequency Spectra per Electrode'
+  },
+  scales: {
+    yAxes: [{
+      stacked:true,
+      scaleLabel: {
+      display: true,
+      labelString: '10 Average Power (uV)'
+    }}],
+    xAxes: [{
+      stacked:true,
+      scaleLabel: {
+        display: true,
+        labelString: 'Frequency (Hz)'
+      }
+    }]
+ }
+};   
+
 export const bciFreqSpectraChartOptions: Partial<ChartOptions> = {
   events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
   tooltips: {
@@ -97,11 +139,13 @@ export const bciFreqSpectraChartOptions: Partial<ChartOptions> = {
   },
   scales: {
     yAxes: [{
+   
       scaleLabel: {
       display: true,
       labelString: '10 Average Power (uV)'
     }}],
     xAxes: [{
+ 
       scaleLabel: {
         display: true,
         labelString: 'Frequency (Hz)'
@@ -175,7 +219,7 @@ export interface bciSettings {
 export function bciGetSettings(): bciSettings {
   return {
     cutOffLow: 8,
-    cutOffHigh: 12,
+    cutOffHigh: 13,
     interval: 200,
     bins: 256,
     duration: 1024,
@@ -184,7 +228,7 @@ export function bciGetSettings(): bciSettings {
     secondsToSave: 10,
     nChannels: 4,
     sliceFFTLow: 8,
-    sliceFFTHigh: 12,
-    maxFreq : 10
+    sliceFFTHigh: 13,
+    maxFreq : 5
   };
 }

@@ -9,7 +9,7 @@ import { catchError } from 'rxjs/operators';
 import { Chart } from 'chart.js';
 
 import { bciBackgroundColors, bciBorderColors,  bciChannelLabels, bciFreqSpectraChartOptions,
-	      bciGetSettings, bciSettings,bciSpectraDataSet } from '../shared/bciChartOptions';
+			bciFreqStackedChartOptions,bciGetSettings, bciSettings, bciSpectraDataSet, } from '../shared/bciChartOptions';
 import {
   bandpassFilter,
   epoch,
@@ -38,31 +38,29 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
 
   @Input() data: Observable<EEGSample>;
 
-  settings: ISettings;
+  // settings: ISettings;
+  settings: bciSettings;
   bciSettings: bciSettings;
+  bciBelowAvgSettings: bciSettings;
 
   readonly destroy = new Subject<void>();
   readonly channelNames = channelNames;
 
   chart: Chart;
   bciChart: Chart;
+  bciBelowAvgChart: Chart;
 
   freq8: Array<Array<number>>;
   freq8Avg: Array<Array<number>>;
-
+  // TP9Freq8: Array<Array<number>>;
+  
   constructor(private incomingData: DataService) {}
 
   ngOnInit(): void {
     // Get settings for the charts
-    this.settings = getSettings();
-    this.settings.name = 'Frequency Spectrum';
-    this.bciSettings = getSettings();
-    this.bciSettings.name='BCI Control bar';
+    this.settings = bciGetSettings();
+    this.settings.name = 'Alpha Channel Signals(8-12)';
 
-    this.freq8 = Array(4).fill(0).map(ch => new Array(10).fill(0));
-    this.freq8Avg = Array(4).fill(0).map(ch => new Array(10).fill(0));
-
-    // Get the chart options such as adding dummy data and configurations
     const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
     const dataSets = [];
 
@@ -72,38 +70,95 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
           temp.borderColor = borderColors[i];
           temp.label = channelLabels[i];
           temp.data  = Array(this.settings.maxFreq).fill(0);
+          // temp.data  = Array(10).fill(0);
           dataSets.push(temp);
         });
-    // Instantiate the chart with the options
     this.chart = new Chart(canvas, {
-          type: 'line',
+          type: 'bar',
           data: {
-            datasets: [dataSets[0], dataSets[1], dataSets[2], dataSets[3]],
-            labels: [],
+            datasets: [dataSets[0],dataSets[1],dataSets[2],dataSets[3]],
+            labels: [8,9,10,11,12],
         },
-        options: FreqSpectraChartOptions
+         options: bciFreqSpectraChartOptions
       });
+//recover com
+// this.bciSettings = getSettings();
+//     this.bciSettings.name='BCI Control Bar';
 
-    const canvas2 = document.getElementById('bciChart') as HTMLCanvasElement;
+//     const bciCanvas2 = document.getElementById('bciChart') as HTMLCanvasElement;
+//     const bciDataSets = [];
+
+//     Array(this.bciSettings.nChannels).fill(0).map((ch, i) => {
+//           const temp =  Object.assign({}, bciSpectraDataSet);
+//           temp.backgroundColor = backgroundColors[i];
+//           temp.borderColor = borderColors[i];
+//           temp.label = bciChannelLabels[i];
+//           temp.data  = Array(10).fill(0);
+//           bciDataSets.push(temp);
+//         });
+
+//     this.bciChart = new Chart(bciCanvas2, {
+//           type: 'bar',
+//           data: {
+//             datasets: bciDataSets,
+//             labels: [1,2,3,4,5,6,7,8,9,10],
+            
+//         },
+//         // options: bciFreqSpectraChartOptions
+//       });
+
+    this.freq8 = Array(4).fill(0).map(ch => new Array(10).fill(0));
+    this.freq8Avg = Array(4).fill(0).map(ch => new Array(10).fill(0));
+    // this.TP9Freq8 = Array(2).fill(0).map(ch => new Array(10).fill(0));
+    // the complete bci chart 
+	this.bciSettings = getSettings();
+    this.bciSettings.name='BCI Control Bar';
+
+    const bciCanvas = document.getElementById('bciChart') as HTMLCanvasElement;
     const bciDataSets = [];
 
     Array(this.bciSettings.nChannels).fill(0).map((ch, i) => {
           const temp =  Object.assign({}, bciSpectraDataSet);
           temp.backgroundColor = backgroundColors[i];
           temp.borderColor = borderColors[i];
-          temp.label = channelLabels[i];
+          temp.label = bciChannelLabels[i];
           temp.data  = Array(10).fill(0);
           bciDataSets.push(temp);
         });
 
-    this.bciChart = new Chart(canvas2, {
+    this.bciChart = new Chart(bciCanvas, {
           type: 'bar',
           data: {
             datasets: bciDataSets,
             labels: [1,2,3,4,5,6,7,8,9,10],
+            
         },
-        options: bciFreqSpectraChartOptions
+        // options: bciFreqSpectraChartOptions
       });
+
+    //the bci color changing chart
+    this.bciBelowAvgSettings = getSettings();
+    this.bciBelowAvgSettings.name='BCI Control Bar Indicator';
+    const bciBelowAvgCanvas = document.getElementById('bciBelowAvg') as HTMLCanvasElement;
+    const bciBelowAvgDataSets = [];
+
+    Array(2).fill(0).map((ch,i)=>{
+    	const temp = Object.assign({}, bciSpectraDataSet);
+    	temp.backgroundColor = backgroundColors[i];
+    	temp.borderColor = borderColors[i];
+    	temp.label = bciChannelLabels[i];
+    	temp.data = Array(10).fill(0);
+    	bciBelowAvgDataSets.push(temp);
+    });
+    this.bciBelowAvgChart = new Chart (bciBelowAvgCanvas,{
+    	type:'bar',
+    	data:{
+    		datasets: bciDataSets,
+    		labels:[1,2,3,4,5,6,7,8,9,10],
+    	},
+    	options: bciFreqStackedChartOptions
+    });
+
   }
 
   ngAfterViewInit(): void {
@@ -141,7 +196,7 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
     this.destroy.next();
   }
 
-  // Add the processed data to the charts
+
   addData(spectraData: any): void {
     for (let i = 0; i < this.settings.nChannels; i++) {
       // remove old data by setting length to 0
@@ -156,47 +211,105 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
         freqs.forEach((val: number) => this.chart.data.labels.push(val));
       }
     }
-    this.chart.update();
+     this.chart.update();
   }
 
+ 	
+ 
+  avgOfTenAvgList=Array(5).fill(0);
+  stdList=Array(5).fill(0); 
+  onCounter: number=0;
+  offCounter:number=0;
+  switcher: number=0;
 
   addChannelData(spectraData: any): void {
     //console.log('spectraData: ', spectraData);
-    let std: string;
-    let average: number;
-
-    let counter: number;
-    let switcher: number;
-
+    let tenAvg: number;
+    let std: number;
+    let avgOfTenAvg:number;
+    let jump:number;
+    
     for (let i = 0; i < this.settings.nChannels; i++) {
-	      // this.bciChart.data.datasets[i].data.length=0;
 	      // spectraData.psd[i].forEach((val: number) => this.bciChart.data.datasets[i].data.push(val));
 	      // spectraData.psd[i].forEach(function(val: number) {
 	      // this.bciChart.data.datasets[i].data.push(spectraData.psd[i][8]);
-	      // console.log('psd[', i, '][8]', spectraData.psd[i][8]);
+	      console.log('psd[', i, '][8]', spectraData.psd[i][8]);
 	      this.freq8[i].shift();
 	      this.freq8[i].push(spectraData.psd[i][8]);
-	      // console.log('TP9Freq8:     ', this.freq8[i]);
+	      console.log('TP9Freq8:     ', this.freq8[i]);
+	      tenAvg=this.incomingData.average(this.freq8[i]);
 	      this.freq8Avg[i].shift();
-	      this.freq8Avg[i].push(this.incomingData.average(this.freq8[i]));
-	      // console.log('freq8Avg:     ', this.freq8Avg[i]);
-	      this.bciChart.data.datasets[i].data.shift();
-	      this.bciChart.data.datasets[i].data.push(this.incomingData.average(this.freq8[i]));
-	      console.log('datasets', i, '.data:  ', this.bciChart.data.datasets[i].data);
+	      this.freq8Avg[i].push(tenAvg);
+	      console.log('freq8Avg:     ', this.freq8Avg[i]);
+	      this.chart.data.datasets[i].data.shift();
+	      this.chart.data.datasets[i].data.push(tenAvg);
 	      console.log('this.bciChart.data.datasets[i].data:  ',this.bciChart.data.datasets[i].data);
-	      average = this.incomingData.average(this.bciChart.data.datasets[i].data);
 
+	      avgOfTenAvg= this.incomingData.average(this.freq8Avg[i]);
+	      this.avgOfTenAvgList.shift();
+	      this.avgOfTenAvgList.push(avgOfTenAvg);
+	      // avgOfTenAvg = this.incomingData.average(this.bciChart.data.datasets[i].data);
+	      std = + this.incomingData.standardDeviation(this.freq8Avg[i]);
+	      this.stdList.shift();
+	      this.stdList.push(std);
+	   
+	      console.log('avgOfTenAvgList:  ',this.avgOfTenAvgList);
+	      console.log('freq8Avg[i]:'  ,this.freq8Avg[i]);
+	      console.log('stdList:  ',this.stdList);
+
+	      for (let j=0; j<5; j++){
+	      	let a=<number>this.freq8Avg[i][j+5];
+	      	let b=<number>this.avgOfTenAvgList[j];
+	      	jump=a-b;
+	      
+	      	      if(jump>this.stdList[j]){
+	      	      	 this.onCounter++;
+	      	      }
+	      	      if(jump<0 && Math.abs(jump)>2*this.stdList[j]){
+	      	      	this.offCounter++;
+	      	      }
+	      	      this.onCounter>this.offCounter ? this.switcher=1: this.switcher=0;
+	      	console.log('jump: ', jump, 'freq8Avg[i][j+5]:',this.freq8Avg[i][j+5],'avgOfTenAvgList[j]: ',this.avgOfTenAvgList[j]);
+	      	console.log('std',i,': ', this.stdList[j]);
+	      }
+	      // if (this.offCounter>4 && this.switcher==1){
+	      // 		this.switcher=0;
+	      // 	}
+
+	      // if (this.onCounter>4 && this.switcher==0){
+	      // 	   this.switcher=1;
+	      // }
+	      console.log('this.onCounter: ',this.onCounter, 'this.offCounter: ', this.offCounter,  'switcher: ', this.switcher);
+	
+	      this.onCounter=0;
+	      this.offCounter=0;  
+
+	      if (i==0){
+	      		if (tenAvg<avgOfTenAvg){
+	      			// this.bciChart.data.datasets[0].data.shift()
+	      			// this.bciChart.data.datasets[0].data.push(tenAvg);
+	      		}
+	      		if (tenAvg>avgOfTenAvg){
+	      			// this.bciChart.data.datasets[0].data.shift();
+	      			// this.bciChart.data.datasets[0].data.push(avgOfTenAvg);
+	      			// this.bciChart.data.datasets[1].data.shift();
+	      			// this.bciChart.data.datasets[1].data.push(tenAvg-avgOfTenAvg);
+	      		}
+
+	      }
 	      // this.bciChart.data.datasets[0].data.push(this.average(this.freq8));
-	      std = this.incomingData.standardDeviation(this.freq8Avg[i]);
+	     
 	      // study chart make moving chart by time
-	        console.log('std',i,': ', std);
-	    	console.log('average ',i,':  ',average);
+	      
+	    	// console.log('average ',i,':  ',average);
 	    	
     }
 	 	// display the average as bar chart
 	    // console.log('TP9Freq8:     ',this.freq8);
 	    // console.log('freq8Avg:  ',this.freq8Avg);
+	    this.chart.update();
     	this.bciChart.update();
+    	this.bciBelowAvgChart.update();
 
     }
 
