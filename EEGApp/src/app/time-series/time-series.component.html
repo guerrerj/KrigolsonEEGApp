@@ -1,5 +1,12 @@
 <div class="container time-series">
   <h3>Live EEG Timeseries </h3>
+
+  <div *ngIf="checkWarning()" class="alert alert-warning alert-dismissible fade show" role="alert">
+      <strong>Important!</strong> {{getWarningMessage}}.
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="resetWarning()">
+          <span aria-hidden="true">&times;</span>
+      </button>
+  </div>
   <div class="row">
     <div  class="col-6 time-series-channel" *ngFor="let canvas of canvases; let i = index" >
       <aside class="time-series-control">
@@ -35,7 +42,18 @@
         Filter
       </label>
     </div>
-
-
+     <div class="col-2 ml-5">
+        <button class="btn btn-info" (click)="startRecording()" *ngIf="!isRecording"> Record
+            <fa-icon [icon]="faRecordVinyl"></fa-icon>
+        </button>
+        <div *ngIf="isRecording">
+          <button type="button" class="btn btn-danger" (click)="stopRecording()" *ngIf="isRecording">
+            <i class="far fa-stop-circle">stop</i>
+          </button>
+        </div>
+    </div>
+    <div *ngIf="isRecording" class="col-2">
+        {{sampleCount}} Samples
+    </div>
   </div>
 </div>

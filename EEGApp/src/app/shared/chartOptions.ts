@@ -139,7 +139,7 @@ export const FreqExperChartOptions: Partial<ChartOptions> = {
        scaleLabel: {
          display: true,
          labelString: 'Power (uV)'
-       }
+       }, ticks: { min: 0 }
      }],
      xAxes: [{
        scaleLabel: {
@@ -150,9 +150,34 @@ export const FreqExperChartOptions: Partial<ChartOptions> = {
    },
    legend: {
      display: false
-   }
+   },
+
 };
 
+export const FreqCompareAvgChartOptions: Partial<ChartOptions> = {
+  title: {
+    display: true,
+    text: 'Comparison of Power Average'
+  },
+  responsiveAnimationDuration: 0,
+  scales: {
+    yAxes: [{
+      scaleLabel: {
+        display: true,
+        labelString: 'Power (uV)'
+      }, ticks: { min: 0 }
+    }],
+    xAxes: [{
+      scaleLabel: {
+        display: true,
+        labelString: 'Charts'
+      }
+    }]
+  },
+  legend: {
+    display: false
+  }
+};
 export interface ISettings {
   cutOffLow: number;
   cutOffHigh: number;

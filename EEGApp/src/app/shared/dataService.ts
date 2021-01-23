@@ -91,6 +91,4 @@ export class DataService implements  OnDestroy {
     const stdDev = Math.sqrt(avgSquareDiff).toFixed(0);
     return stdDev;
   }
-
-
 }

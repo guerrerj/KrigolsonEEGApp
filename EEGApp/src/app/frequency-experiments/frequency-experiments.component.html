@@ -1,7 +1,7 @@
   <div class="container frequency-experiments">
 
-        <div *ngIf="isWarning" class="alert alert-warning alert-dismissible fade show" role="alert">
-          <strong>Important!</strong> {{warningMessage}}.
+        <div *ngIf="checkWarning()" class="alert alert-warning alert-dismissible fade show" role="alert">
+          <strong>Important!</strong> {{getWarningMessage}}.
           <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="resetWarning()">
               <span aria-hidden="true">&times;</span>
           </button>
@@ -54,7 +54,7 @@
                 <fa-icon [icon]="faRecordVinyl"></fa-icon>
             </button>
             <div *ngIf="isRecording1">
-              <button type="button" class="btn btn-primary" (click)="stopRecording()" *ngIf="isRecording">
+              <button type="button" class="btn btn-primary" (click)="stopRecording()" *ngIf="isRecording1">
                 <i class="far fa-stop-circle">stop</i>
               </button> {{sample1Count}} Samples
             </div>
@@ -69,7 +69,7 @@
                 <fa-icon [icon]="faRecordVinyl"></fa-icon>
             </button>
             <div *ngIf="isRecording2">
-              <button type="button" class="btn btn-primary" (click)="stopRecording()" *ngIf="isRecording">
+              <button type="button" class="btn btn-primary" (click)="stopRecording()" *ngIf="isRecording2">
                 <i class="far fa-stop-circle">stop</i>
               </button> {{sample2Count}}  Samples
             </div>
@@ -78,6 +78,10 @@
             </div>
         </div>
 
+    </div>
+
+    <div [ngClass]="(shouldCompare) ? 'row compareAvg' : 'row compareAvg hidden'">
+      <canvas id="compareAvgChart"></canvas>
     </div>
   </div>
 
