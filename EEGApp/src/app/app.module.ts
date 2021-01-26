@@ -1,3 +1,4 @@
+import { MessagesService } from './shared/messages.servce';
 import { ChartService } from './shared/chart.service';
 import { DataService } from './shared/dataService';
 import { BrowserModule } from '@angular/platform-browser';
@@ -38,7 +39,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     FormsModule,
     FontAwesomeModule
   ],
-  providers: [DataService, ChartService],
+  providers: [DataService, ChartService, MessagesService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

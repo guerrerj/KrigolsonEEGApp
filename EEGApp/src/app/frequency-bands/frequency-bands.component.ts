@@ -25,7 +25,7 @@ import {
   templateUrl: 'frequency-bands.component.html',
   styleUrls: ['frequency-bands.component.less'],
 })
-export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
+export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewChecked {
   // Declare input fields that users interact with
   @Input() data: Observable<EEGSample>;
 
@@ -66,7 +66,6 @@ export class FrequencyBandsComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
 
-  ngAfterViewInit(): void {  }
 
   ngAfterViewChecked(): void {
     // Check for incoming data

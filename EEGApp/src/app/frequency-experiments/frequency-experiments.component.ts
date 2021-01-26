@@ -3,7 +3,7 @@ import { Component, OnInit, Input, AfterViewChecked, OnDestroy } from '@angular/
 import { Observable, Subscription, Subject } from 'rxjs';
 import { EEGSample, channelNames } from 'muse-js';
 import { faRecordVinyl } from '@fortawesome/free-solid-svg-icons';
-import { getSettings, ISettings, channelLabels, FreqExperChartOptions, orderedBandLabels } from './../shared/chartOptions';
+import { getSettings, ISettings, channelLabels, FreqExperChartOptions, orderedBandLabels, bandsDataSet, FreqCompareAvgChartOptions } from './../shared/chartOptions';
 import { takeUntil } from 'rxjs/operators';
 import { catchError } from 'rxjs/operators';
 import { Chart} from 'chart.js';
@@ -14,6 +14,7 @@ import {
   fft,
   powerByBand
 } from '@neurosity/pipes';
+import { MessagesService } from '../shared/messages.servce';
 
 @Component({
   selector: 'app-frequency-experiments',
@@ -36,45 +37,79 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
   selectedElectrodeIdx = 1; // which electrode to display
   chart1: any;
   chart2: any;
+  avgChart: any;
   isSamples1: boolean;
-
-  isWarning = false;
-  warningMessage: string;
+  shouldCompare: boolean;
 
   readonly destroy = new Subject<void>();
   readonly freqBands = 4;
+  readonly numAvgs = 2;
   private samples1: any;
   private samples2: any;
+  private cleanedSamples1: any;
+  private cleanedSamples2: any;
+  private timeoutVar: any;
 
   private subscription: Subscription;
 
-  constructor(private inDataService: DataService) { }
+  constructor(private inDataService: DataService, private messagesService: MessagesService) { }
 
   ngOnInit(): void {
+    this.shouldCompare = false;
+    this.samples1 = [];
+    this.samples2 = [];
+    this.cleanedSamples1 = [];
+    this.cleanedSamples2 = [];
+    // Update settings for charts
     this.settings = getSettings();
-    this.settings.interval = 200; // get new data every 200 ms
+    this.settings.interval = 100; // get new data every 100 mss
     this.settings.name = 'Frequency Experiments';
+    // get drawing canvas elements
     const canvas1 = document.getElementById('freqChartExperiments1') as HTMLCanvasElement;
     const canvas2 = document.getElementById('freqChartExperiments2') as HTMLCanvasElement;
+    const avgCanvas = document.getElementById('compareAvgChart') as HTMLCanvasElement;
+    // Prepare dummy data
     const dataSet = Object.assign({}, spectraDataSet);
     dataSet.backgroundColor = backgroundColors[0];
     dataSet.borderColor = borderColors[0];
     dataSet.data  = Array(this.settings.maxFreq).fill(0);
 
+    const compareDataSet = [];
+    for( let i = 0; i < 2; i++){
+      const temp = {...spectraDataSet};
+      temp.backgroundColor = backgroundColors[i];
+      temp.borderColor = borderColors[i];
+      temp.data = Array(this.numAvgs).fill(0);
+      temp.label = (i + 1).toString();
+      compareDataSet.push(temp);
+    }
+
+
+    // Initialize charts with empty data
     this.chart1 = new Chart(canvas1, {
       type: 'line',
       data: {
-        datasets: [dataSet],
+        datasets: [{...dataSet}],
     },
       options: FreqExperChartOptions
     });
 
+    dataSet.backgroundColor = backgroundColors[1];
+    dataSet.borderColor = borderColors[1];
     this.chart2 = new Chart(canvas2, {
       type: 'line',
       data: {
-        datasets: [dataSet],
+        datasets: [{...dataSet}],
     },
       options: FreqExperChartOptions
+    });
+
+    this.avgChart = new Chart(avgCanvas, {
+      type: 'bar',
+      data: {
+        datasets: compareDataSet,
+      },
+      options: FreqCompareAvgChartOptions
     });
 
   }
@@ -85,34 +120,33 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
     {
       this.inDataService.data.pipe(samples => this.data = samples);
     }
-    // Check if is warning add timeout to reset
-    if (this.isWarning){
-      setTimeout(()=>{
-        this.resetWarning();
-      }, 5000); // five seconds delay
-    }
   }
 
   startRecording(isSamples1 = true): void {
     if (this.data === undefined){
-      // Need to ensure that device is connected
-      this.isWarning = true;
-      this.warningMessage = 'You need to connect your muse to the web app before recording!';
+      // Need to ensure that device is connected and data is present
+      this.messagesService.setWarning('You need to connect your muse to the web app before recording!');
       return;
     }
 
     if (this.displayedBand.includes('Select') || this.selectedElectrode.includes('Select')){
-        // Need to tell user to fill in options first
-        this.isWarning = true;
-        this.warningMessage = 'You need to choose an electrode and a frequency band before recording!';
+        // Need to tell user to fill in options first if they haven't done so
+        this.messagesService.setWarning('You need to choose an electrode and a frequency band before recording!');
         return;
+    }
+
+    if (this.isRecording1 && !isSamples1 || this.isRecording2 && isSamples1) {
+      this.messagesService.setWarning('You can only record one set of data at a time.');
+      return;
     }
 
     this.isSamples1 = isSamples1;
     (this.isSamples1) ? this.isRecording1 = true : this.isRecording2 = true;
-    this.samples1 = [];
-    this.samples2 = [];
-
+    if (this.shouldCompare){
+      this.samples1 = [];
+      this.samples2 = [];
+      this.shouldCompare = false;
+    }
     this.subscription =  this.data.pipe(
       takeUntil(this.destroy),
       bandpassFilter({
@@ -131,20 +165,34 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
     });
 
     // Set callback to end subscription after timeToRecord is finished
-    setTimeout(() => {
+    this.timeoutVar = setTimeout(() => {
       this.stopRecording();
-      this.displayCharts();
     }, this.timeToRecord * 1000);
   }
 
   // Used to end subsription after recording ends
   stopRecording(): void {
+    this.displayCharts();
+    clearTimeout(this.timeoutVar); // Clear timeout incase it was called from ui
     (this.isSamples1) ? this.isRecording1 = false : this.isRecording2 = false;
     this.subscription.unsubscribe();
-    if (this.shouldSaveToCsv)
+    if (this.shouldSaveToCsv) // Save if it is decided to save
     {
        this.saveToCsv();
     }
+    if (this.samples1.length > 0 && this.samples2.length > 0 ){
+     this.populateComparisonChart();
+    }
+  }
+
+  populateComparisonChart(): void {
+    this.shouldCompare = true;
+    for (let i = 0; i < 2; i++){
+      this.avgChart.data.datasets[i].data.length = 0;
+      this.avgChart.data.datasets[i].data.push( (i === 0) ?  this.inDataService.average(this.cleanedSamples1):
+      this.inDataService.average(this.cleanedSamples2));
+    }
+    this.avgChart.update();
   }
 
   // Used to update the charts after recording is finished
@@ -159,39 +207,42 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
       // Update chart title with time changed to seconds
       this.chart1.options.title.text = this.capitalize(this.selectedBand) + ' Power Over ' + this.timeToRecord + ' Seconds';
       this.chart1.update();
+      // Update cleaned samples data
+      this.cleanedSamples1 = dataSet;
     }
     else {
       this.chart2.data.datasets[0].data.length = 0;
+      this.chart2.data.labels.length = 0;
       dataSet.forEach((val: number ) => this.chart2.data.datasets[0].data.push(val));
       dataSet.forEach(( _, idx) => this.chart2.data.labels.push(idx + 1));
 
       this.chart2.options.title.text = this.capitalize(this.selectedBand) + ' Power Over ' + this.timeToRecord + ' Seconds';
       this.chart2.update();
+      // Update cleaned samples data
+      this.cleanedSamples2 = dataSet;
     }
   }
 
-  // Used to get a specific set of data from the samples
+  // Used to get a specific set of data from the samples as a number array
   getcleanedSampleValues(band = ''): number[] {
     const cleanedDataSet = [];
     // In case all electrodes were selected
-    console.log('this.samp:',this.samples1);
     const all = -1;
-    (this.isSamples1) ?
-        // push samples 1 data
-        this.samples1.forEach((samp: any) =>  cleanedDataSet.push((this.selectedElectrodeIdx === all) ?
-              // Get average value in case of all electrodes are selected
-              this.inDataService.average(samp[(band.length > 1) ? band : this.selectedBand])          :
-                    samp[(band.length > 1) ? band : this.selectedBand][this.selectedElectrodeIdx]))
-         :
+    if (this.isSamples1) {
+         // push samples 1 data
+         this.samples1.forEach((samp: any) =>  cleanedDataSet.push((this.selectedElectrodeIdx === all) ?
+               // Get average value in case of all electrodes are selected
+               this.inDataService.average(samp[(band.length > 1) ? band : this.selectedBand])          :
+               samp[(band.length > 1) ? band : this.selectedBand][this.selectedElectrodeIdx]));
+    }else{
         // push samples 2 data
         this.samples2.forEach((samp: any) => cleanedDataSet.push((this.selectedElectrodeIdx === all) ?
-             // Get average value in case all electrodes are selected
-              this.inDataService.average(samp[(band.length > 1) ? band : this.selectedBand ]) :
-                    samp[(band.length > 1) ? band : this.selectedBand ][this.selectedElectrodeIdx]
+                // Get average value in case all electrodes are selected
+                this.inDataService.average(samp[(band.length > 1) ? band : this.selectedBand ]) :
+                samp[(band.length > 1) ? band : this.selectedBand ][this.selectedElectrodeIdx]
           ));
-        console.log('this.samp1:',this.samples1);
-        console.log('this.samp2:',this.samples2);
-    console.log(cleanedDataSet);
+
+    }
     return cleanedDataSet;
   }
 
@@ -224,12 +275,6 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
       return;
     }
     this.timeToRecord = val;
-  }
-
-  // Reset any warning messages displayed to user
-  resetWarning(): void{
-    this.isWarning = false;
-    this.warningMessage = '';
   }
 
   // Meant for capitalizing the first letter of a word
@@ -267,5 +312,20 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
 
   ngOnDestroy(): void {
     this.destroy.next();
+  }
+
+  // Used to check if there are any messages to display
+  checkWarning(): boolean {
+    return this.messagesService.isWarning;
+  }
+
+  // Clear messages after they have been displayed
+  resetWarning(): void {
+    this.messagesService.resetWarning();
+  }
+
+  // Used to get the warning message
+  get getWarningMessage(): string {
+    return this.messagesService.warningMessage;
   }
 }

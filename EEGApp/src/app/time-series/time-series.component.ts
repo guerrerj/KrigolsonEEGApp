@@ -1,14 +1,16 @@
+import { MessagesService } from './../shared/messages.servce';
 import { orderedLabels } from './../shared/chartOptions';
 import { DataService } from './../shared/dataService';
 import { Component, ElementRef, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { SmoothieChart, TimeSeries } from 'smoothie';
 import { channelNames, EEGSample } from 'muse-js';
 import { map, groupBy, filter, mergeMap, takeUntil } from 'rxjs/operators';
 import { bandpass } from './../shared/bandpass.filter';
 
 import { ChartService } from '../shared/chart.service';
+import { faRecordVinyl } from '@fortawesome/free-solid-svg-icons';
 
 const samplingFrequency = 256;
 
@@ -25,6 +27,8 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
   canvases: SmoothieChart[];
   minFreq = 1;
   maxFreq = 30;
+  isRecording = false;
+  faRecordVinyl = faRecordVinyl;
   readonly destroy = new Subject<void>();
   readonly channelNames = orderedLabels;
   readonly amplitudes = [];
@@ -43,14 +47,19 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
   readonly colors = this.chartService.getColors();
 
   private lines: TimeSeries[];
+  private samples: number [][];
+  private subscription: Subscription;
 
-  constructor(private view: ElementRef, private chartService: ChartService, private incomingData: DataService) {
+  constructor(private view: ElementRef, private chartService: ChartService, private incomingData: DataService,
+              private messagesService: MessagesService) {
   }
 
+  // used as property to get the current amplitude scaling factor
   get amplitudeScale(): number {
     return this.canvases[0].options.maxValue;
   }
 
+  // Set the new amplitude scaling factor for the chart
   setAmplitudeScale(value: number): void  {
     if (isNaN(value)) {
       return;
@@ -69,13 +78,14 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
     return this.canvases[0].options.millisPerPixel;
   }
 
+  // Set the new time scale on the charts
   setTimeScale(value: number) : void {
     if (isNaN(value)) {
-      return;
+      return; // Nothing to do if scaler is not a number
     }
     if (value < this.minTimeScale || value > this.maxTimeScale)
     {
-      return;
+      return; // nothing to do if scaler value is out of bounds
     }
 
     for (const canvas of this.canvases) {
@@ -83,6 +93,7 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
     }
   }
 
+  // Set whether eeg data is filtered or not
   setFilter(filterElem: any): void{
     if (filterElem.checked){
       this.filter = true;
@@ -158,5 +169,58 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
 
     this.lines[orderedIndex].append(timestamp, amplitude);
     this.amplitudes[orderedIndex] = amplitude.toFixed(2);
+  }
+
+  // Used to record live eeg data
+  startRecording(): void {
+    if (this.data === undefined){
+      this.messagesService.setWarning('You need to connect to the muse before recording.');
+      return;
+    }
+    this.isRecording = true;
+    this.samples = [];
+    this.subscription = this.data.subscribe(sample => {
+      this.samples.push([sample.timestamp, ...sample.data]);
+    });
+  }
+
+  // Used to stop recording data
+  stopRecording(): void {
+    this.isRecording = false;
+    this.subscription.unsubscribe();
+    this.saveToCsv();
+  }
+
+  // Used to read samples count
+  get sampleCount(): number {
+    return this.samples.length;
+  }
+
+  // Used to save eeg data to csv
+  saveToCsv(): void {
+    const a = document.createElement('a');;
+    const headers = ['time', ...channelNames].join(',');
+    const csvData = headers + '\n' + this.samples.map(item => item.join(',')).join('\n');
+    const file = new Blob([csvData], {type: 'text/csv'});
+    a.href = URL.createObjectURL(file);
+    document.body.appendChild(a);
+    a.download = 'recording.csv';
+    a.click();
+    document.body.removeChild(a);
+  }
+
+   // Used to check if there are any messages to display
+   checkWarning(): boolean {
+    return this.messagesService.isWarning;
+  }
+
+  // Clear messages after they have been displayed
+  resetWarning(): void {
+    this.messagesService.resetWarning();
+  }
+
+  // Used to get the warning message
+  get getWarningMessage(): string {
+    return this.messagesService.warningMessage;
   }
 }
