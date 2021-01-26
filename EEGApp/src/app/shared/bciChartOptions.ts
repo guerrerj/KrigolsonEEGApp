@@ -14,13 +14,25 @@ export const bciOrderedBandLabels = ['Delta', 'Theta', 'Alpha', 'Beta'];
 export const bciChannelLabels = ['TP9', 'AF7', 'AF8', 'TP10'];
 export const bciOrderedLabels = ['AF7', 'AF8', 'TP9', 'TP10'];
 
+export const bciFreqLabel = ['Base','Increment'];
+
+export const bciStackedBackgroundColors: string [] = [
+'rgba(48, 63, 159, 0.7)',
+'rgba(255, 87, 34, 0.7)',
+];
+
+export const bciStackedBoarderColors: string [] = [
+'rgba(48, 63, 159, 1)',
+'rgba(255, 87, 34, 1)',
+];
+
 
 export const bciBackgroundColors: string[] = [
-  'rgba(255, 99, 132, 0.2)',
-  'rgba(54, 162, 235, 0.2)',
-  'rgba(255, 206, 26, 0.2)',
-  'rgba(75, 92, 192, 0.2)',
-  'rgba(153, 102, 255, 0.2)',
+  'rgba(255, 99, 132, 0.8)',
+  'rgba(54, 162, 235, 0.8)',
+  'rgba(255, 206, 26, 0.8)',
+  'rgba(75, 92, 192, 0.8)',
+  'rgba(153, 102, 255, 0.8)',
 ];
 
 export const bciBorderColors: string[] = ['rgba(255, 99, 132, 1)',
@@ -68,6 +80,49 @@ export const bciBandsDataSet: IBandsDataSet = {
   lineTension: 0.4
 };
   
+export const bciChannelFreqStackedChartOptions: Partial<ChartOptions> = {
+  events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+  tooltips: {
+    enabled: true,
+    intersect: true,
+    mode: 'point',
+    callbacks: {
+      label(tooltipItem: any, data) : string {
+          let label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+          if (label) {
+              label += ': ';
+          }
+          label += Math.round(tooltipItem.yLabel * 100) / 100;
+          return label;
+      }
+    }
+  },
+  hover: {
+    animationDuration: 0
+  },
+  responsiveAnimationDuration: 0,
+  title: {
+    display: true,
+    text: '1 Channel & 1 Frequency Chart'
+  },
+  scales: {
+    yAxes: [{
+      stacked:true,
+      scaleLabel: {
+      display: true,
+      labelString: '10 Average Power (uV)'
+    }}],
+    xAxes: [{
+      stacked:true,
+      scaleLabel: {
+        display: false,
+        labelString: 'Most Recent Value'
+      }
+    }]
+ }
+};   
+
 export const bciFreqStackedChartOptions: Partial<ChartOptions> = {
   events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
   tooltips: {
@@ -91,115 +146,26 @@ export const bciFreqStackedChartOptions: Partial<ChartOptions> = {
   },
   responsiveAnimationDuration: 0,
   title: {
-    display: false,
-    text: 'Frequency Spectra per Electrode'
-  },
-  scales: {
-    yAxes: [{
-      stacked:true,
-      scaleLabel: {
-      display: true,
-      labelString: '10 Average Power (uV)'
-    }}],
-    xAxes: [{
-      stacked:true,
-      scaleLabel: {
-        display: true,
-        labelString: 'Frequency (Hz)'
-      }
-    }]
- }
-};   
-
-export const bciFreqSpectraChartOptions: Partial<ChartOptions> = {
-  events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
-  tooltips: {
-    enabled: true,
-    intersect: true,
-    mode: 'point',
-    callbacks: {
-      label(tooltipItem: any, data) : string {
-          let label = data.datasets[tooltipItem.datasetIndex].label || '';
-
-          if (label) {
-              label += ': ';
-          }
-          label += Math.round(tooltipItem.yLabel * 100) / 100;
-          return label;
-      }
-    }
-  },
-  hover: {
-    animationDuration: 0
-  },
-  responsiveAnimationDuration: 0,
-  title: {
-    display: false,
-    text: 'Frequency Spectra per Electrode'
-  },
-  scales: {
-    yAxes: [{
-   
-      scaleLabel: {
-      display: true,
-      labelString: '10 Average Power (uV)'
-    }}],
-    xAxes: [{
- 
-      scaleLabel: {
-        display: true,
-        labelString: 'Frequency (Hz)'
-      }
-    }]
- }
-};
-
-
-export const bciFreqBandsChartOptions: Partial<ChartOptions> = {
-  title: {
     display: true,
-    text: 'Frequency Bands per Electrode'
+    text: 'All Channels at selected Frequency Chart'
   },
-  responsiveAnimationDuration: 0,
   scales: {
-      yAxes: [{
-        scaleLabel: {
+    yAxes: [{
+      stacked:true,
+      scaleLabel: {
+      display: true,
+      labelString: '10 Average Power (uV)'
+    }}],
+    xAxes: [{
+      stacked:true,
+      scaleLabel: {
         display: true,
-        labelString: 'Power (uV)'
-      }}],
-      xAxes: [{
-        scaleLabel: {
-          display: true,
-          labelString: 'Frequency Bands'
-        }
-      }]
-  }
+        labelString: 'Most Recent'
+      }
+    }]
+ }
 };
 
-export const bciFreqExperChartOptions: Partial<ChartOptions> = {
-   title: {
-     display: true,
-     text: 'Power'
-   },
-   responsiveAnimationDuration: 0,
-   scales: {
-     yAxes: [{
-       scaleLabel: {
-         display: true,
-         labelString: 'Power (uV)'
-       }
-     }],
-     xAxes: [{
-       scaleLabel: {
-         display: true,
-         labelString: 'Time (sample number)'
-       }
-     }]
-   },
-   legend: {
-     display: false
-   }
-};
 
 export interface bciSettings {
   cutOffLow: number;
@@ -213,14 +179,14 @@ export interface bciSettings {
   nChannels: number;
   sliceFFTLow?: number;
   sliceFFTHigh?: number;
-  maxFreq: number;
+  maxDisplayedFreq: number;
 }
 
 export function bciGetSettings(): bciSettings {
   return {
     cutOffLow: 8,
     cutOffHigh: 13,
-    interval: 200,
+    interval: 120,
     bins: 256,
     duration: 1024,
     srate: 256,
@@ -229,6 +195,7 @@ export function bciGetSettings(): bciSettings {
     nChannels: 4,
     sliceFFTLow: 8,
     sliceFFTHigh: 13,
-    maxFreq : 5
+    maxDisplayedFreq : 10
   };
 }
+

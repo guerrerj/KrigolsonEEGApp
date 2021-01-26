@@ -2,72 +2,90 @@
 
 @override 
 
-.bci {
-  min-height: @minHeight;
-  background-color: @componentColor;
-}
-
 :host {
   display: flex;
   position: relative;
   font-family: Roboto, sans-serif;
 }
 
-.frequency-spectra{
+.bci{
   width: 100%;
   display: flex;
   flex-direction: column;
-  margin-top:2rem;
+  margin-top:0rem;
   min-height: @minHeight;
+  background-color: @componentColor;
 }
 
-#freq-spectra-cont{
-  width:800px;
-  height:550px;
-  text-align: center;
-}
-
-#bci-div{
+.button-row-div{
   width: 10%;
   display: flex;
   flex-direction: row;
-  margin-top:2rem;
-  min-height: @minHeight;
+  margin-top:1rem;
+  margin-bottom:0rem;
+  min-height:20px;
 }
 
-#bci-bar-div{
+.bci-row-div{
+  width: 10%;
+  display: flex;
+  flex-direction: row;
+  margin-top:0rem;
+  margin-bottom:0rem;
+  min-height: @minHeight/3;
+}
+
+.bci-ten-div{
   float: left;
   width:400px;
-  height:200px;
+  height:250px;
   text-align: center;
-}
-
-#bci-indicator-div{
-  margin-left: 70%;
-  width:400px;
-  height:200px;
-  text-align: center;
+  margin-top:1rem;
 }
 
 #freqChart{
-  width: 800px;
-  height: 500px;
-  background-color: @componentColor;
+  width: 400px;
+  height: 300px;
+  background-color: #f5f6f7;
+}
+
+.bci-game{
+  margin-left: 50%;
+  width:500px;
+  height:200px;
+  text-align: center;
+  margin-top: 1rem;
+  text-align: center;
+  font-family: Comic Sans MS;
+}
+
+
+#gameArea{
+ border: 1px solid green;
+ width:  400px;
+ height: 200px;
 }
 
 #bciChart{
   width: 400px;
   height: 200px;
-  background-color: @componentColor;
+  background-color: #f5f6f7;
+}
+
+.bci-one-div{
+  margin-left: 50%;
+  width:400px;
+  height:200px;
+  text-align: center;
+  margin-top: 1rem;
 }
 
 #bciBelowAvg{
   width: 400px;
   height: 200px;
-  background-color: @componentColor;
+  background-color: #f5f6f7;
 
 }
-
 
 
 

@@ -174,6 +174,7 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
   getcleanedSampleValues(band = ''): number[] {
     const cleanedDataSet = [];
     // In case all electrodes were selected
+    console.log('this.samp:',this.samples1);
     const all = -1;
     (this.isSamples1) ?
         // push samples 1 data
@@ -188,6 +189,9 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
               this.inDataService.average(samp[(band.length > 1) ? band : this.selectedBand ]) :
                     samp[(band.length > 1) ? band : this.selectedBand ][this.selectedElectrodeIdx]
           ));
+        console.log('this.samp1:',this.samples1);
+        console.log('this.samp2:',this.samples2);
+    console.log(cleanedDataSet);
     return cleanedDataSet;
   }
 
