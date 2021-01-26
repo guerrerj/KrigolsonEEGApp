@@ -1,6 +1,10 @@
 import { DataService } from './../shared/dataService';
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
-import { timeout } from 'rxjs/operators';
+import { Component, ElementRef, HostListener, Input, OnInit, ViewChild, AfterViewChecked } from '@angular/core';
+import { filter, groupBy, map, mergeMap, timeout } from 'rxjs/operators';
+import { MessagesService } from '../shared/messages.servce';
+import { EEGSample } from 'muse-js';
+import { Observable, Subscription } from 'rxjs';
+import { bandpass } from '../shared/bandpass.filter';
 
 export enum KEY_CODE  {
   SPACE = ' ',
@@ -24,15 +28,19 @@ export enum STAGES {
   FOURTEEN = 27,
   FIFTEEN = 29
 }
+
+const samplingFrequency = 256;
 @Component({
   selector: 'app-erp',
   templateUrl: './erp.component.html',
   styleUrls: ['./erp.component.less']
 })
-export class ErpComponent implements OnInit {
+export class ErpComponent implements OnInit, AfterViewChecked {
 
   @ViewChild('oddBallCanvas', {static: true})
   canvas: ElementRef<HTMLCanvasElement>;
+
+  @Input() data: Observable<EEGSample>;
 
   readonly oddBallChance = 0.25;
   readonly fixationDelay = 0.3;
@@ -48,9 +56,14 @@ export class ErpComponent implements OnInit {
   readonly normalFont = '20px serif';
   readonly textColor = 'black';
   readonly numberBlocks = 2;
-  readonly numberTrials = 4;
+  readonly numberTrials = 10;
   readonly textDelay = 1000; // ms
   readonly canvasColor = '#C7A27C';
+  readonly targetVal = 2;
+  readonly constVal = 1;
+  readonly channels = 4;
+  readonly minFreq = 1;
+  readonly maxFreq = 30;
 
   centerX: number;
   centerY: number;
@@ -69,29 +82,48 @@ export class ErpComponent implements OnInit {
   startTime: number;
   currentResponse: number;
   reactionTime: number;
-
+  targetTracker: number[][];
+  isTarget: boolean;
+  isControl: boolean;
 
   experimentalData: Array<any>;
   key: any;
   stage: number;
 
   private context: CanvasRenderingContext2D;
+  private subscription: Subscription;
+  private samples: number[][];
 
-  constructor(private dataService: DataService) { }
+  constructor(private incomingData: DataService, private messagesService: MessagesService) { }
 
   ngOnInit(): void {
     this.context = this.canvas.nativeElement.getContext('2d');
     this.centerX = this.context.canvas.width / 2;
-    this.centerY = this.context.canvas.height / 4 * 3;
-    this.textY = this.context.canvas.height / 4;
+    this.centerY = this.context.canvas.height / 2;
+    this.textY = this.context.canvas.height / 5;
     this.stage = 1;
     this.playing = true;
     this.currentBlock = 1;
     this.currentTrial = 1;
     this.experimentalData = [];
+    this.samples = [];
+    this.isTarget = false;
+    this.isControl = false;
     this.clearCanvas();
+    this.targetTracker = [];
+    for (let i = 0; i < this.numberBlocks; i++) {
+      this.targetTracker.push([]);
+    }
 
   }
+
+  ngAfterViewChecked(): void {
+    if (this.incomingData.data != null && this.data == null)
+    {
+      this.incomingData.data.pipe(samples => this.data = samples);
+    }
+  }
+
 
   @HostListener('document:keypress', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): any {
@@ -111,9 +143,43 @@ export class ErpComponent implements OnInit {
   }
 
   animate(): void {
+    if (this.data === undefined){
+      this.messagesService.setWarning('You must first connect to the muse before playing.');
+      return;
+    }
     this.playing = true;
     this.draw();
     requestAnimationFrame(this.animate.bind(this));
+  }
+
+  // Used to record live eeg data
+  startRecording(): void {
+    this.subscription =  this.data.pipe(
+      mergeMap(sampleSet =>
+        sampleSet.data.slice(0, this.channels).map((value, electrode) => ({
+          timestamp: sampleSet.timestamp, value, electrode
+        }))),
+      groupBy(sample => sample.electrode),
+      mergeMap(group => {
+        const bandpassFilter = bandpass(samplingFrequency, this.minFreq, this.maxFreq);
+        const conditionalFilter = value =>  bandpassFilter(value);
+        return group.pipe(
+          filter(sample => !isNaN(sample.value)),
+          map(sample => ({ ...sample, value: conditionalFilter(sample.value) })),
+        );
+      })
+    )
+      .subscribe(sample => {
+        this.samples.push([sample.timestamp, sample.value, sample.electrode]);
+        this.targetTracker[this.currentBlock - 1].push((!this.isTarget && !this.isControl) ? 0
+                                        : (this.isTarget) ? this.targetVal : this.constVal);
+      });
+
+  }
+
+  // Used to stop recording data
+  stopRecording(): void {
+    this.subscription.unsubscribe();
   }
 
   resetTrial(): void {
@@ -125,6 +191,7 @@ export class ErpComponent implements OnInit {
   draw(): void {
     switch (this.stage){
       case (STAGES.ONE):
+        this.startRecording();
         this.addText(this.headingFont, 'Welcome to the Oddball Game: Press space to continue.');
         this.textY += 25;
         this.addText(this.smallFont, 'Press space to continue');
@@ -205,6 +272,13 @@ export class ErpComponent implements OnInit {
         this.resetTrial();
         this.clearCanvas();
         this.drawCircle();
+        if (this.drawColor === this.targetColor){
+          this.isTarget = true;
+        }
+        if (this.drawColor === this.controlColor){
+          this.isControl = true;
+        }
+
         this.startTime = Date.now();
         this.stage += 2;
         break;
@@ -239,6 +313,10 @@ export class ErpComponent implements OnInit {
         this.playing = false;
         this.stage = 1;
         this.clearCanvas();
+        this.stopRecording();
+        console.log('This is the target variables', this.targetTracker[0].filter(elem => elem > 1));
+        console.log("This samles length", this.samples.length);
+        console.log(" all tracker data", this.targetTracker);
     }
   }
 
@@ -262,9 +340,25 @@ export class ErpComponent implements OnInit {
 
   // Clear the canvas and reset important locators
   clearCanvas(): void{
-    this.textY = this.context.canvas.height / 4;
+    this.textY = this.context.canvas.height / 5;
     this.context.fillStyle = this.canvasColor;
     this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+    this.isTarget = false;
+    this.isControl = false;
   }
 
+  // Used to check if there are any messages to display
+  checkWarning(): boolean {
+    return this.messagesService.isWarning;
+  }
+
+  // Clear messages after they have been displayed
+  resetWarning(): void {
+    this.messagesService.resetWarning();
+  }
+
+  // Used to get the warning message
+  get getWarningMessage(): string {
+    return this.messagesService.warningMessage;
+  }
 }
