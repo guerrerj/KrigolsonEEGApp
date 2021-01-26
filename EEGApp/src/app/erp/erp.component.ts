@@ -51,9 +51,9 @@ export class ErpComponent implements OnInit, AfterViewChecked {
   readonly radius = 30;
   readonly startAngle = 0;
   readonly endAngle = 2 * Math.PI;
-  readonly headingFont = '25px bold serif';
-  readonly smallFont = '15px serif';
-  readonly normalFont = '20px serif';
+  readonly headingFont = '25px  Lobster';
+  readonly smallFont = '15px Lobster';
+  readonly normalFont = '20px Lobster';
   readonly textColor = 'black';
   readonly numberBlocks = 2;
   readonly numberTrials = 10;
