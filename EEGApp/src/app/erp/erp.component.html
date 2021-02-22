@@ -1,4 +1,10 @@
   <div class="container erp">
+   <div *ngIf="checkWarning()" class="alert alert-warning alert-dismissible fade show" role="alert">
+      <strong>Important!</strong> {{getWarningMessage}}.
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="resetWarning()">
+          <span aria-hidden="true">&times;</span>
+      </button>
+  </div>
     <div class="row justify-content-center">
         <div class="col-12 text-center">
            <h3>Oddball Game</h3>
@@ -6,6 +12,25 @@
         <canvas #oddBallCanvas width="600" height="400" id="gameCanvas"></canvas>
      </div>
      <div class="row justify-content-center mt-2" ng-if="playing == false">
-          <button type="button" class="btn btn-secondary" (click)="animate()">Play</button>
+          <button type="button" class="btn btn-secondary" (click)="startGame()">Play</button>
      </div>
+     <div [ngClass]="(shouldPlot) ? 'plotChart' : 'plotChart hidden'">
+      <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle selectOption" type="button" id="dropdownMenu1"
+             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-click="toggled" ng-bind="selectedElectrode">
+            {{selectedElectrode}}
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
+            <!--<button class="dropdown-item" type="button" (click)="setElectrode('All')">All</button>-->
+            <button class="dropdown-item" type="button" (click)="setElectrode('AF7')">AF7</button>
+            <button class="dropdown-item" type="button" (click)="setElectrode('AF8')">AF8</button>
+            <button class="dropdown-item" type="button" (click)="setElectrode('TP9')">TP9</button>
+            <button class="dropdown-item" type="button" (click)="setElectrode('TP10')">TP10</button>
+          </div>
+        </div>
+
+       <div class="row">
+         <canvas id="plotReactionChart"></canvas>
+      </div>
+    </div>
   </div>

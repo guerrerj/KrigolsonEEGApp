@@ -127,6 +127,26 @@ export const FreqBandsChartOptions: Partial<ChartOptions> = {
       }]
   }
 };
+export const ERPChartOptions: Partial<ChartOptions> = {
+  title: {
+    display: true,
+    text: 'Oddball EEG Averages'
+  },
+  responsiveAnimationDuration: 0,
+  scales: {
+      yAxes: [{
+        scaleLabel: {
+        display: true,
+        labelString: 'Power (uV)'
+      }}],
+      xAxes: [{
+        scaleLabel: {
+          display: true,
+          labelString: 'Samples'
+        }
+      }]
+  }
+};
 
 export const FreqExperChartOptions: Partial<ChartOptions> = {
    title: {

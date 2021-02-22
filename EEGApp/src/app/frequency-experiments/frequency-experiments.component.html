@@ -36,8 +36,8 @@
 
         <form class="form-inline selectOption">
           <div class="form-group  mb-2">
-            <label for="timeToRecord" class="sr-only">Recording Time (seconds)</label>
-              <input #timeToRecordElem type="text" class="form-control" placeholder="Time to Record: {{timeToRecord}} s" (keyup.enter)="setTimeToRecord(timeToRecordElem.value); timeToRecordElem.value = '' ">
+              <input #timeToRecordElem type="text" class="form-control" placeholder="Record for: {{timeToRecord}} s " (keyup.enter)="setTimeToRecord(timeToRecordElem.value); timeToRecordElem.value = '' ">
+              <label > (Press Enter to Change)</label>
           </div>
           <div class="form-check">
             <input #csvElem class="form-check-input" type="checkbox" value="" id="CSVId" (click)="setSaveCSV(csvElem)">
