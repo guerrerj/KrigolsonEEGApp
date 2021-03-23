@@ -1,4 +1,5 @@
 import { Component, Input, AfterViewInit, AfterViewChecked,OnInit, OnDestroy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil,catchError } from 'rxjs/operators';
 import { channelNames, EEGSample } from 'muse-js';
@@ -12,6 +13,11 @@ import {
   fft,
   sliceFFT
 } from '@neurosity/pipes';
+
+import { MessagesService } from '../shared/messages.servce';
+import { AuthService } from '../auth/auth.service';
+import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
+import { ModalService } from '../service/modal.service';
 
 // If you have inner observable use mergemap to allow you to  subscribe to directly to it after applying map operation
 const chartStyles = {
@@ -33,25 +39,25 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   @Input() data: Observable<EEGSample>;
 
   displayedFreq = 'Select Frequency';
-  selectedFreq: number;
+  selectedFreq: number ;
+  inputFreq: number;
   selectedElectrode = 'Select Electrode';
-  selectedElectrodeIdx = 1; //
-  isWarning = false;
-  warningMessage: string;
+  selectedElectrodeIdx: number; //
 
   readonly destroy = new Subject<void>();
   readonly channelNames = channelNames;
 
   chart: Chart;
   bciChart: Chart;
-  bciBelowAvgChart: Chart;
+  bciChart1: Chart;
   settings: bciSettings;
   bciSettings: bciSettings;
-  bciBelowAvgSettings: bciSettings;
+  bciOneSettings: bciSettings;
   freqOfChannel: Array<Array<number>>; // take 10 subscribed values for setings.nChannels at one frequency
   AvgfreqOfChannel: Array<Array<number>>; // 10 respective avg of above collected 10 values
   avgOfTenAvgList=Array(10).fill(0);      // same as above , use as a temp
   stdList=Array(10).fill(0);  //10 std values of the 10 avg values
+  
   onCounter: number=0;    
   offCounter:number=0;  
   switcher: number=0;  
@@ -59,18 +65,31 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   numOfStd:number=2;
   comparison = 'Compare last 4';
   numOfComparison: number=4;
-
   // x: Observable<number>=10;
-  x:number=8;
-  y:number= 78;
+  // positon of the ball for game
+  x: number=8;
+  y: number= 78;
   radius: number = 8;	
-  
-  constructor(private incomingData: DataService) {}
+  // gameCanvas:any document.getElementById('gameArea') as HTMLCanvasElement;
+  // ctx: any gameCanvas.getContext('2d');
+
+
+  isRecording = false;
+  recordedData = [];
+  ref: AngularFireStorageReference;
+  task: AngularFireUploadTask;
+
+  user: any;
+
+  constructor(	private incomingData: DataService, 
+  				private messagesService: MessagesService, 
+  				public auth: AuthService,
+  				private afStorage: AngularFireStorage,
+  				private modalService: ModalService) {}
 
   ngOnInit(): void {
     // Get settings for the charts
     this.settings = bciGetSettings();
-
     const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
     const dataSets = [];
 
@@ -95,11 +114,11 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
 
     this.freqOfChannel = Array(4).fill(0).map(ch => new Array(10).fill(0));
     this.AvgfreqOfChannel = Array(4).fill(0).map(ch => new Array(10).fill(0));
-    // this.TP9Freq8 = Array(2).fill(0).map(ch => new Array(10).fill(0));
-    // the complete bci chart 
+    // the complete bciChart 
 	this.bciSettings = bciGetSettings();
     this.bciSettings.name='Energy Indicator';
     this.bciSettings.nChannels=2;
+    this.bciSettings.maxDisplayedFreq =10;
     const bciCanvas = document.getElementById('bciChart') as HTMLCanvasElement;
     const bciDataSets = [];
 
@@ -108,7 +127,7 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
           temp.backgroundColor = bciStackedBackgroundColors[i];
           temp.borderColor = bciStackedBackgroundColors[i];
           temp.label = bciFreqLabel[i];
-          temp.data  = Array(10).fill(0);
+          temp.data  = Array(this.bciSettings.maxDisplayedFreq).fill(0);
           bciDataSets.push(temp);
         });
 
@@ -121,43 +140,52 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
          options: bciChannelFreqStackedChartOptions
       });
 
-    this.bciBelowAvgSettings = bciGetSettings();
-    this.bciBelowAvgSettings.name='BCI Control Bar Indicator';
-    const bciBelowAvgCanvas = document.getElementById('bciBelowAvg') as HTMLCanvasElement;
-    const bciBelowAvgDataSets = [];
-    this.bciBelowAvgSettings.nChannels=2;
 
-    Array(this.bciBelowAvgSettings.nChannels).fill(0).map((ch,i)=>{
-    	const temp = Object.assign({}, bciSpectraDataSet);
-    	temp.backgroundColor = bciBackgroundColors[i];
-    	temp.borderColor = bciBorderColors[i];
-    	temp.label = bciChannelLabels[i];
-    	temp.data = Array(10).fill(0);
-    	bciBelowAvgDataSets.push(temp);
-    });
-    this.bciBelowAvgChart = new Chart (bciBelowAvgCanvas,{
-    	type:'bar',
-    	data:{
-    		datasets: bciDataSets,
-    		labels:[],
-    	},
-    	options: bciChannelFreqStackedChartOptions
-    });
+// bciChart1
+    const bciCanvas1 = document.getElementById('bciOneChart') as HTMLCanvasElement;
+    const bciDataSets1 = [];
+
+
+    Array(this.bciSettings.nChannels).fill(0).map((ch, i) => {
+          const temp =  Object.assign({}, bciSpectraDataSet);
+          temp.backgroundColor = bciStackedBackgroundColors[i];
+          temp.borderColor = bciStackedBackgroundColors[i];
+          temp.label = bciFreqLabel[i];
+          temp.data  = Array(this.settings.maxDisplayedFreq).fill(0);
+          bciDataSets1.push(temp);
+        });
+
+    this.bciChart1 = new Chart(bciCanvas1, {
+          type: 'bar',
+          data: {
+            datasets: bciDataSets1,
+            labels: [],        
+        },
+         options: bciChannelFreqStackedChartOptions
+      });
 
 	const gameCanvas=document.getElementById('gameArea') as HTMLCanvasElement;
     const ctx = gameCanvas.getContext('2d');
-     ctx.fillStyle="black";
-		ctx.fillRect(0,0, gameCanvas.width, gameCanvas.height);
-		ctx.fillStyle="red";
+    ctx.fillStyle="black";
+	ctx.fillRect(0,0, gameCanvas.width, gameCanvas.height);
+	ctx.fillStyle="red";
    	ctx.beginPath();
-	 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-	 ctx.fill();
+	ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+	ctx.fill();
+
+
+	this.checkConnection();
+
+	this.auth.getUserState()
+      .subscribe( user => {
+        this.user = user;
+        console.log(user);
+      })
 
   }
 
   ngAfterViewInit(): void {
-  	
-
+  
     
   }
 
@@ -182,8 +210,8 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
       )
         // Finally after data has been processed, subscribe the component to it
         .subscribe(data => {
+        	// console.log(data);
           this.addBciData(data);
-
         });
       }
   }
@@ -192,30 +220,19 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
   }
  
 
-
+  
   addBciData(spectraData: any): void {
-     // console.log('spectraData: ', spectraData);
+    console.log('spectraData: ', spectraData);
     let tenAvg: number;
     let std: number;
     let avgOfTenAvg:number;
     let jump:number;
- 
-    if (this.data === undefined){
-      this.isWarning = true;
-      this.warningMessage = 'You need to connect your muse to the web app!';
-      return;
-    }
-    if (this.displayedFreq.includes('Select') || this.selectedElectrode.includes('Select')){
-        this.isWarning = true;
-        this.warningMessage = 'Please choose an electrode and a frequency band !';
-        return;
-    }
-
-    console.log('this.selectedFreq:',  this.selectedFreq, 'this.selectedElectrodeIdx: ' ,this.selectedElectrodeIdx);
+    // console.log('this.selectedFreq:',  this.selectedFreq, 'this.selectedElectrodeIdx: ' ,this.selectedElectrodeIdx);
 
     for (let i = 0; i < this.settings.nChannels; i++) {
 	      this.freqOfChannel[i].shift();
 	      this.freqOfChannel[i].push(spectraData.psd[i][this.selectedFreq]);
+
 	      // console.log('spectraData.psd[', i, '][',this.selectedFreq,']', spectraData.psd[i][this.selectedFreq]);
 	      // console.log('freqOfChannel[', i, '][',this.selectedFreq,']', this.freqOfChannel[i][9]);
 	      tenAvg=this.incomingData.average(this.freqOfChannel[i]);
@@ -224,25 +241,43 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
 	      //fill in the data for all 4 channel , ie. 1st chart
 	      this.chart.data.datasets[i].data.shift();
 	      this.chart.data.datasets[i].data.push(this.incomingData.average(this.freqOfChannel[i]));
-	      avgOfTenAvg = this.incomingData.average(this.AvgfreqOfChannel[i]);
-	      this.avgOfTenAvgList.shift();
-	      this.avgOfTenAvgList.push(this.incomingData.average(this.AvgfreqOfChannel[i]));
-	      std = + this.incomingData.standardDeviation(this.AvgfreqOfChannel[i]);
-	      this.stdList.shift();
-	      this.stdList.push(std);
+	      this.chart.update();  
+	      
+	       avgOfTenAvg = this.incomingData.average(this.AvgfreqOfChannel[i]);
+		   this.avgOfTenAvgList.shift();
+		   this.avgOfTenAvgList.push(this.incomingData.average(this.AvgfreqOfChannel[i]));
 	      if(this.selectedElectrodeIdx==i){
 	      		if (tenAvg<=avgOfTenAvg){
-	      			this.bciChart.data.datasets[0].data.shift()
+	      			//second chart ten average , base + increment
+	      			this.bciChart.data.datasets[0].data.shift();
 	      			this.bciChart.data.datasets[0].data.push(this.incomingData.average(this.freqOfChannel[this.selectedElectrodeIdx]));
 	      			this.bciChart.data.datasets[1].data.shift();
 	      			this.bciChart.data.datasets[1].data.push(0);
+	      			//third chart input , only one bar 
+	      			this.bciChart1.data.datasets[0].data.length = 0;
+    				this.bciChart1.data.datasets[1].data.length = 0;
+    				this.bciChart1.data.datasets[0].data.shift();
+	      			this.bciChart1.data.datasets[0].data.push(this.incomingData.average(this.freqOfChannel[this.selectedElectrodeIdx]));
+	      			this.bciChart1.data.datasets[1].data.shift();
+	      			this.bciChart1.data.datasets[1].data.push(0);
 	      		}
 	      		if (tenAvg>avgOfTenAvg){
 	      			this.bciChart.data.datasets[0].data.shift();
 	      			this.bciChart.data.datasets[0].data.push(this.incomingData.average(this.freqOfChannel[this.selectedElectrodeIdx]));
 	      			this.bciChart.data.datasets[1].data.shift();
 	      			this.bciChart.data.datasets[1].data.push(tenAvg-avgOfTenAvg);
+	      			// third chart input, only one bar
+					this.bciChart1.data.datasets[0].data.length = 0;
+    				this.bciChart1.data.datasets[1].data.length = 0;
+    				this.bciChart1.data.datasets[0].data.shift();
+	      			this.bciChart1.data.datasets[0].data.push(this.incomingData.average(this.freqOfChannel[this.selectedElectrodeIdx]));
+	      			this.bciChart1.data.datasets[1].data.shift();
+	      			this.bciChart1.data.datasets[1].data.push(tenAvg-avgOfTenAvg);
+    				// this.bciOneChart.update();
 	      		}
+		        std = + this.incomingData.standardDeviation(this.AvgfreqOfChannel[i]);
+		        this.stdList.shift();
+		        this.stdList.push(std);
 	      		for (let j=10-this.numOfComparison; j<10; j++){
 	      			let bar=<number>this.AvgfreqOfChannel[this.selectedElectrodeIdx][j];
 	      			let avgOfTenBar=<number>this.avgOfTenAvgList[j];
@@ -263,24 +298,97 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
 			    console.log('this.onCounter: ',this.onCounter, 'this.offCounter: ', this.offCounter,  'switcher: ', this.switcher);
 			    this.onCounter=0;
 			    this.offCounter=0;  
+
+			    if (this.isRecording){
+			    	this.recordedData.push(spectraData.psd[this.selectedElectrodeIdx][this.selectedFreq]); //inside if(this.selectedElectrodeIdx==i)
+			    	console.log(this.recordedData);
+			    }
 	      }  	
     }
-	    this.chart.update();
     	this.bciChart.update();
-    	this.bciBelowAvgChart.update();
+    	this.bciChart1.update();
     	this.playGame();
     }
+
+  link = document.createElement('a');
+  startRecord():void{
+  	if (this.data === undefined){
+      // Need to ensure that device is connected and data is present
+      this.messagesService.setWarning('You need to connect your muse to the web app before recording!');
+      return;
+    }
+    if ( Number.isNaN(this.selectedFreq) || this.selectedElectrode.includes('Select')){
+        this.messagesService.setWarning('Then choose an electrode and a frequency band !');
+      return;
+    }
+    this.isRecording =true;
+  }  
+
+
+  stopRecord(modalID: string):void{  
+  	let csvData = this.selectedElectrode + ',' + this.recordedData.join(',') + '\n';
+  	if(this.recordedData && this.isRecording==true){
+	  	this.link.href = URL.createObjectURL(new Blob([csvData],{type: 'text/cvs'}));
+	  	this.link.innerText = 'user: ' + this.user.displayName;
+	  	document.body.appendChild(this.link);
+	  	this.link.download = 'recording.csv';	
+	    this.link.click();
+  	}
+
+
+   this.openModal(modalID);
+
+   	const current = new Date();
+	current.setHours(0)
+	current.setMinutes(0)
+	current.setSeconds(0)
+	current.setMilliseconds(0)
+	const timestamp = current.getTime();
+
+    const id = this.user.displayName+timestamp+Math.random().toString(36).substring(2);
+    this.ref = this.afStorage.ref(id);
+    this.task = this.ref.put(new Blob([csvData],{type: 'text/cvs'}));
+
+    this.recordedData.length=0;
+    this.isRecording =false;
+    document.body.removeChild(this.link);
+  	
+  }
+
+
+  openModal(modalID: string) {
+        this.modalService.open(modalID);
+    }
+
+  closeModal(modalID: string) {
+        this.modalService.close(modalID);
+    }
+
 
   setElectrode(val: string): void{
     this.selectedElectrode = val;
     this.selectedElectrodeIdx = (val.toLowerCase() === 'all') ? -1 : bciChannelLabels.indexOf(val);
     // console.log('electrodeIdx:',this.selectedElectrodeIdx);
   }
-  setFrequency(val: any): any {
-    this.selectedFreq = +val;
-    val==0? this.displayedFreq = 'Freq 8' :  (val==1 ? this.displayedFreq= 'Freq 9' :  
-    (val ==2 ? this.displayedFreq = 'Freq 10' : ( val==3 ? this.displayedFreq='Freq 11' : this.displayedFreq = 'Freq 12')));
-    // console.log('selectedFreq: ' ,this.selectedFreq, 'displayedFreq: ', this.displayedFreq);
+
+  // setFrequency(val: any): any {
+  //   this.selectedFreq = +val;
+  //   val==8? this.displayedFreq = 'Freq 8' :  (val==9 ? this.displayedFreq= 'Freq 9' :  
+  //   (val ==10 ? this.displayedFreq = 'Freq 10' : ( val==11 ? this.displayedFreq='Freq 11' :  this.displayedFreq = 'Freq 12')));
+  //   // console.log('selectedFreq: ' ,this.selectedFreq, 'displayedFreq: ', this.displayedFreq);
+  // }
+
+  setFrequency (val:number):void {
+  	if ( !Number.isNaN(val) ){
+  		if (Number(val)>0 && Number(val)<31 ){
+	  		this.inputFreq = Number(val);
+	  		this.selectedFreq=this.inputFreq;
+	  		// console.log(typeof(this.inputFreq),this.inputFreq);
+	  		return
+  		}
+  		// console.log(typeof(val),val);
+  		return
+  	} 	
   }
 
   setNumOfStd(val:any):any{
@@ -314,6 +422,25 @@ export class BciComponent implements OnInit, OnDestroy, AfterViewInit, AfterView
 	 ctx.fill();
   }
 
+  checkConnection():void {
+  		if ( Number.isNaN(this.selectedFreq) || this.selectedElectrode.includes('Select')){
+        this.messagesService.setWarning('Please connect your muse EEG then choose an electrode and a frequency band !');
+      return;
+    }
+  }
+
+  checkWarning(): boolean {
+    return this.messagesService.isWarning;
+  }
+
+  get warningMessage(): string {
+    return this.messagesService.warningMessage;
+  }
+
+  resetWarning(): void {
+    this.messagesService.resetWarning();
+  }
+  
 
 
 }

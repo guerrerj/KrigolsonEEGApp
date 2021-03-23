@@ -184,8 +184,8 @@ export interface bciSettings {
 
 export function bciGetSettings(): bciSettings {
   return {
-    cutOffLow: 8,
-    cutOffHigh: 13,
+    cutOffLow: 1,
+    cutOffHigh: 31,
     interval: 120,
     bins: 256,
     duration: 1024,
@@ -193,8 +193,8 @@ export function bciGetSettings(): bciSettings {
     name: '',
     secondsToSave: 10,
     nChannels: 4,
-    sliceFFTLow: 8,
-    sliceFFTHigh: 13,
+    sliceFFTLow: 1,
+    sliceFFTHigh: 31,
     maxDisplayedFreq : 10
   };
 }

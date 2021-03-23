@@ -19,6 +19,18 @@ import { EcgComponent } from './ecg/ecg.component';
 import { HomeComponent } from './home/home.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
+import { AngularFireModule } from '@angular/fire';
+import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { AngularFireAuthModule } from '@angular/fire/auth';
+import { AngularFireStorageModule } from '@angular/fire/storage';
+
+// import { FirebaseService} from './service/firebase.service';
+import { RegistrationComponent } from './auth/registration/registration.component';
+import { LoginComponent } from './auth/login/login.component';
+import { ModalComponent } from './shared/modal/modal.component';
+
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -32,12 +44,26 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     ErpComponent,
     EcgComponent,
     HomeComponent,
+    RegistrationComponent,
+    LoginComponent,
+    ModalComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    AngularFireModule.initializeApp({
+    apiKey: "AIzaSyDDM2BtjOiRlUJ-eEzTlUkEyjEdGNILID8",
+    authDomain: "krigolsonlab-49287.firebaseapp.com",
+    projectId: "krigolsonlab-49287",
+    storageBucket: "krigolsonlab-49287.appspot.com",
+    messagingSenderId: "321523846501",
+    appId: "1:321523846501:web:b94291907699d1caab258c"
+  }),
+    AngularFirestoreModule,
+    AngularFireAuthModule,
+    AngularFireStorageModule
   ],
   providers: [DataService, ChartService, MessagesService],
   bootstrap: [AppComponent]

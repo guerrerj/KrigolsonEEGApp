@@ -241,7 +241,6 @@ export class FrequencyExperimentsComponent implements OnInit, OnDestroy, AfterVi
                 this.inDataService.average(samp[(band.length > 1) ? band : this.selectedBand ]) :
                 samp[(band.length > 1) ? band : this.selectedBand ][this.selectedElectrodeIdx]
           ));
-
     }
     return cleanedDataSet;
   }
