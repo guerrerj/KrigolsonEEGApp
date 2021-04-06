@@ -58,8 +58,8 @@ export class ErpComponent implements OnInit, AfterViewChecked {
   readonly smallFont = '15px Lobster';
   readonly normalFont = '20px Lobster';
   readonly textColor = 'black';
-  readonly numberBlocks = 2;
-  readonly numberTrials = 10;
+  readonly numberBlocks = 10;
+  readonly numberTrials = 20;
   readonly textDelay = 1000; // ms
   readonly canvasColor = '#C7A27C';
   readonly targetVal = 2;
@@ -157,7 +157,6 @@ export class ErpComponent implements OnInit, AfterViewChecked {
   @HostListener('document:keypress', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): any {
     if ( event.key === KEY_CODE.SPACE && this.stage  < STAGES.THREE ){
-      event.preventDefault();
       this.stage += 1;
     }
     if ( event.key.toLowerCase() === KEY_CODE.U_KEY && this.stage === (STAGES.THREE + 1) ){
@@ -170,8 +169,8 @@ export class ErpComponent implements OnInit, AfterViewChecked {
       this.reactionTime = Date.now() - this.startTime;
     }
     if ( event.key === KEY_CODE.SPACE && this.stage  > STAGES.FIFTEEN ){
-       event.preventDefault();
     }
+    event.preventDefault();
   }
 
   startGame(): void {
@@ -263,9 +262,9 @@ export class ErpComponent implements OnInit, AfterViewChecked {
         break;
       case (STAGES.TWO):
         this.clearCanvas();
-        this.addText(this.normalFont, 'You are going to see a series of circles that appear and disappear');
+        this.addText(this.normalFont, `You are going to see ${this.numberBlocks} Blocks of ${this.numberTrials} Trials of circles that appear and`);
         this.addNewLine();
-        this.addText(this.normalFont, 'in the middle of the screen. If you see a circle with the same color');
+        this.addText(this.normalFont, 'disappear in the middle of the screen. If you see a circle with the same color');
         this.addNewLine();
         this.addText(this.normalFont, 'as the circle below, press the space bar as quickly as you can. ');
         this.addNewLine();
