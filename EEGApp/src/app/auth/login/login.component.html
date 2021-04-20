@@ -1,42 +1,27 @@
+<div class="container login">
 <div class="row">
-  <div class="col-12">
+   <div class="col-4 mx-auto">
     <form #loginForm="ngForm" (ngSubmit)="login(loginForm)">
 
       <div class="row" *ngIf="authError">
         <div class="col-12 alert alert-danger">{{ authError?.message }}</div>
       </div>
 
-      <div class="row">
-        <div class="col-12">
+        <div class="form-group">
           <label for="email">Email</label>
-          <input ngModel #email="ngModel" name="email" type="email" class="form-control">
+          <input ngModel #email="ngModel" name="email" type="email" class="form-control" placeholder="Enter email">
         </div>
-      </div>
 
-      <div class="row">
-        <div class="col-12">
+        <div class="form-group">
           <label for="password">Password</label>
-          <input ngModel #password="ngModel" name="password" type="password" class="form-control">
-        </div>
-      </div>
-
-      <div class="row mt-2">
-        <div class="col-12">
-          <a href="/registration">Click here to register</a>
-      <!--     <button 
-  			*ngIf="!user"
-  			mat-raised-button color="primary"
-  			(click)="loginGoogle()">
-  			Login with Google
-		</button> -->
+          <input ngModel #password="ngModel" name="password" type="password" class="form-control" placeholder="Enter Password">
         </div>
 
-
-        <div class="col-12">
-          <button class="btn btn-primary" type="submit">Login</button>
-        </div>
-      </div>
+        <button class="btn btn-primary" type="submit">Login</button>
+        <small id="emailHelp" class="form-text text-muted"><a href="/registration">Click here to register</a></small>
 
     </form>
-  </div>
+    </div>
 </div>
+</div>
+

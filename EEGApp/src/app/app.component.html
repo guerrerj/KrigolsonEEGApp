@@ -4,22 +4,12 @@
        <p class="lead">Observe and explore EEG Data</p>
     <hr class="my-4">
 
-  <div class="container home">
-    <div class="row">
+    <div class="logBtn">
       <p *ngIf="user">Logged in as: {{ user?.displayName }}</p>
-    </div>
-    <div class="row">
       <button class="btn btn-primary mr-2" *ngIf="!user" (click)="register()">Register</button>
       <button *ngIf="user"  (click)="logout()">Logout</button>
       <button class="btn btn-primary" *ngIf="!user" (click)="login()">Login</button>
     </div>
-    
-  </div>
-
-<!-- 
-<ng-template #login>
-  <button class="button" (click)="auth.googleSignin()">Login with Google</button>
-</ng-template> -->
 
     <p class="lead">
       <button type="button" class="btn btn-primary btn-lg" (click)="showConnectModal()">Connection</button>
@@ -29,7 +19,6 @@
     </div>
   </div>
      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a class="navbar-brand" href="/home">Sections</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -51,7 +40,7 @@
     <div class="container-fluid footerContent">
       <div class="row">
        <div class="col-3 mx-auto">
-         <p><b>Krigolson Lab UVic @ Copyright 2020</b></p>
+         <p><b>Krigolson Lab UVic @ Copyright 2021</b></p>
        </div>
       </div>
     </div>
