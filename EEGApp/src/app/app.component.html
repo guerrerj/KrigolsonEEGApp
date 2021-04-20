@@ -3,6 +3,24 @@
     <h1 class="display-5">EEG Data Tool</h1>
        <p class="lead">Observe and explore EEG Data</p>
     <hr class="my-4">
+
+  <div class="container home">
+    <div class="row">
+      <p *ngIf="user">Logged in as: {{ user?.displayName }}</p>
+    </div>
+    <div class="row">
+      <button class="btn btn-primary mr-2" *ngIf="!user" (click)="register()">Register</button>
+      <button *ngIf="user"  (click)="logout()">Logout</button>
+      <button class="btn btn-primary" *ngIf="!user" (click)="login()">Login</button>
+    </div>
+    
+  </div>
+
+<!-- 
+<ng-template #login>
+  <button class="button" (click)="auth.googleSignin()">Login with Google</button>
+</ng-template> -->
+
     <p class="lead">
       <button type="button" class="btn btn-primary btn-lg" (click)="showConnectModal()">Connection</button>
     </p>

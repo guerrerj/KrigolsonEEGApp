@@ -36,7 +36,7 @@ interface ISpectraDataSet {
 }
 export const spectraDataSet: ISpectraDataSet = {
   data: [],
-  backgroundColor: '' ,
+  backgroundColor: '',
   borderColor: '',
   borderWidth: 1,
   fill: false,

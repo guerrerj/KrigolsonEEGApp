@@ -1,5 +1,125 @@
-  <div class="container bci">
-    <div class="row">
+<div class="container bci">
 
+        <div  *ngIf="checkWarning()" class="alert alert-warning alert-dismissible fade show" role="alert">
+          <strong>Important!</strong> {{ warningMessage }}.
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="resetWarning()">
+              <span aria-hidden="true">&times;</span>
+          </button>
+       </div>
+      
+
+      <div>
+        <button (click)="startRecord();">Start Record</button>
+        <button (click)="stopRecord('custom-modal-1');">Stop Record</button>
+      </div>
+      
+      <modal id="custom-modal-1">
+        <div class="modal">
+            <div class="modal-body">
+                <h1>A Custom Modal!</h1>
+                <!-- <p>
+                    Home page text: <input type="text" [(ngModel)]="bodyText" />
+                </p> -->
+                <button (click)="closeModal('custom-modal-1');">Close</button>
+            </div>
+        </div>
+        <div class="modal-background"></div>
+      </modal>
+
+    <div class="col-8 mx-auto">
+    <!-- <div> -->
+      <article class="frequency-spectra-bar">
+        <div class ="button-row-div">
+          <!-- <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle selectOption" type="button" id="dropdown-setFreq"
+               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-click="toggled" ng-bind="selectedFreq">
+              {{displayedFreq}}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+              <button class="dropdown-item" type="button" (click)="setFrequency('8')">Freq 8</button>
+              <button class="dropdown-item" type="button" (click)="setFrequency('9')">Freq 9</button>
+              <button class="dropdown-item" type="button" (click)="setFrequency('10')">Freq 10</button>
+              <button class="dropdown-item" type="button" (click)="setFrequency('11')">Freq 11</button>
+              <button class="dropdown-item" type="button" (click)="setFrequency('12')">Freq 12</button>
+            </div>
+          </div> -->
+        <form class="form-inline selectOption">
+          <div class="form-group  mb-2">
+              <input #input type="text" placeholder="Select a Freq {{selectedFreq}}" (keyup.enter)="setFrequency(input.value); input.value='' ">
+              <label style="margin-left: 5px;"> (Press Enter to select frequency)</label>
+          </div>
+        </form>
+
+          <div class="dropdown">
+            <button style="margin-left: 300PX; margin-right: 10px;" class="btn btn-secondary dropdown-toggle selectOption" type="button" id="dropdown-numofStd"
+               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-click="toggled" ng-bind="numOfStd">
+              {{increment}}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
+              <button class="dropdown-item" type="button" (click)="setNumOfStd('0')">0</button>
+              <button class="dropdown-item" type="button" (click)="setNumOfStd('1')">1</button>
+              <button class="dropdown-item" type="button" (click)="setNumOfStd('2')">2</button>
+              <button class="dropdown-item" type="button" (click)="setNumOfStd('3')">3</button>
+            </div>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle selectOption" type="button" id="dropdown-Comparison"
+               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-click="toggled" ng-bind="numOfComparison">
+              {{comparison}}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
+              <button class="dropdown-item" type="button" (click)="setComparison('5')">5</button>
+              <button class="dropdown-item" type="button" (click)="setComparison('4')">4</button>
+              <button class="dropdown-item" type="button" (click)="setComparison('3')">3</button>
+            </div>
+          </div>  
+        </div>
+
+    <div class ="bci-row-div">
+      <div class ="bci-ten-div">
+        <h6>All Channels at Freq {{selectedFreq}} Energy Indicator</h6>
+        <canvas id="freqChart"></canvas>
+      </div>
+      <div class="bci-game">
+        <h6>Controller: {{selectedElectrode}} & Freq {{selectedFreq}}</h6>
+        <canvas id="gameArea" ></canvas>
+      </div>
+     </div>    
+
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle selectOption" type="button" id="dropdown-Channels"
+             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-click="toggled" ng-bind="selectedElectrode">
+            {{selectedElectrode}}
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
+            <button class="dropdown-item" type="button" (click)="setElectrode('TP9')">TP9</button>
+            <button class="dropdown-item" type="button" (click)="setElectrode('AF7')">AF7</button>
+            <button class="dropdown-item" type="button" (click)="setElectrode('AF8')">AF8</button>
+            <button class="dropdown-item" type="button" (click)="setElectrode('TP10')">TP10</button>
+          </div>
+        </div> 
+
+      <div class="bci-row-div">
+
+          <div class="bci-ten-div">
+            <h6> {{selectedElectrode}} at Freq {{selectedFreq}} {{ this.bciSettings.name }}</h6>
+            <canvas id="bciChart"></canvas>
+          </div>
+
+          <div class="bci-one-div">
+            <h6>{{selectedElectrode}} at Freq {{selectedFreq}} {{ this.bciSettings.name }}</h6>
+            <canvas id="bciOneChart"></canvas>
+          </div>
+      </div>
+          
+      </article>
+ 
     </div>
-  </div>
+
+
+
+
+</div>
+
+

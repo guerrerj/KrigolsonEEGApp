@@ -15,6 +15,7 @@ export class DataService implements  OnDestroy {
     this.onInit(); // Link muse connection status to service variable connected
   }
 
+ 
   connecting = new BehaviorSubject(false);
   connected = new BehaviorSubject(false);
   data: Observable<EEGSample> | null;
@@ -30,6 +31,7 @@ export class DataService implements  OnDestroy {
     )
       .subscribe(status => {
         this.connected.next(status);
+        console.log(this.connected);
         this.data = null;
         this.batteryLevel = null;
       });
