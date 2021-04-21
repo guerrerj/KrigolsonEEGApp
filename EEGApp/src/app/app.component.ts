@@ -41,22 +41,21 @@ export class AppComponent implements OnInit {
     this.auth.getUserState()
       .subscribe( user => {
         this.user = user;
-        console.log(user);
       })
   }
 
-  login() {
+  login(): void {
     try {this.router.navigate(['/login']);}
     catch(e){
       console.log(e);
     }
   }
 
-  logout() {
+  logout(): void {
     this.auth.logout();
   }
 
-  register() {
+  register(): void {
     try{this.router.navigate(['/registration']);}
      catch(e){
       console.log(e);

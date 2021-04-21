@@ -9,32 +9,29 @@ import { Router } from '@angular/router';
 })
 export class HomeComponent implements OnInit {
 
-  // user: firebase.User;
-
   user: any;
 
-  constructor(private auth: AuthService, 
-    private router: Router) { }
+  constructor(private auth: AuthService, private router: Router) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.auth.getUserState()
       .subscribe( user => {
         this.user = user;
       })
   }
 
-  login() {
+  login(): void {
     try {this.router.navigate(['/login']);}
-    catch(e){
-    	console.log(e);
+    catch (e) {
+      console.log(e);
     }
   }
 
-  logout() {
+  logout(): void {
     this.auth.logout();
   }
 
-  register() {
+  register(): void {
     this.router.navigate(['/registration']);
   }
 }
