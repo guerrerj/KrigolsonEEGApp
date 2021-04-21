@@ -6,7 +6,7 @@ import { MessagesService } from '../shared/messages.servce';
 import { EEGSample } from 'muse-js';
 import { Observable, Subscription } from 'rxjs';
 import { bandpass } from '../shared/bandpass.filter';
-import { channelLabels, getSettings } from '../shared/chartOptions';
+import { channelLabels } from '../shared/chartOptions';
 import * as Chart from 'chart.js';
 
 export enum KEY_CODE  {
@@ -130,7 +130,7 @@ export class ErpComponent implements OnInit, AfterViewChecked {
       const temp =  Object.assign({}, spectraDataSet);
       temp.backgroundColor = backgroundColors[i];
       temp.borderColor = borderColors[i];
-      temp.label = (i === 0) ? 'Control Ball': 'Target Ball';
+      temp.label = (i === 0) ? 'Control Ball' : 'Target Ball';
       temp.data  = Array(this.channels).fill(0);
       dataSets.push(temp);
     }
@@ -204,7 +204,7 @@ export class ErpComponent implements OnInit, AfterViewChecked {
       groupBy(sample => sample.electrode),
       mergeMap(group => {
         const bandpassFilter = bandpass(samplingFrequency, this.minFreq, this.maxFreq);
-        const conditionalFilter = value =>  bandpassFilter(value);
+        const conditionalFilter = (value: number) =>  bandpassFilter(value);
         return group.pipe(
           filter(sample => !isNaN(sample.value)),
           map(sample => ({ ...sample, value: conditionalFilter(sample.value) })),
@@ -378,9 +378,6 @@ export class ErpComponent implements OnInit, AfterViewChecked {
       case (STAGES.FOURTEEN):
         this.clearCanvas();
         this.stopRecording();
-        console.log('This is the target variables', this.targetTracker[0][0].filter(elem => elem > 1));
-        console.log("This samles length", this.samples[0].length);
-        console.log(" all tracker data", this.targetTracker);
         this.findChunks();
         this.processChunks(true);
         this.processChunks(false);
@@ -402,7 +399,7 @@ export class ErpComponent implements OnInit, AfterViewChecked {
         indexOffset += this.targetTracker[this.selectedElectrodeIdx][b - 1].length + 1;
       }
       let index = this.targetTracker[this.selectedElectrodeIdx][b].indexOf(this.constVal, 0);
-      console.log("This is the first index", index);
+
       // Want the index fifty locations less than value
       this.controlChunkIndices.push([(index > 50) ? index - 50 + indexOffset : 0 + indexOffset]);
       let tempIndex = 0;
@@ -432,7 +429,7 @@ export class ErpComponent implements OnInit, AfterViewChecked {
       if (b > 0){
         // Plus one to account for 0 being a valid index in the next block
         indexOffset += this.targetTracker[this.selectedElectrodeIdx][b - 1].length + 1;
-        console.log("index offset in target", indexOffset);
+
       }
 
       let index = this.targetTracker[this.selectedElectrodeIdx][b].indexOf(this.targetVal, 0);
@@ -456,9 +453,6 @@ export class ErpComponent implements OnInit, AfterViewChecked {
         }
       }
     }
-    console.log("This is the chunk control indices", this.controlChunkIndices);
-    console.log("This is the target control indices", this.targetChunkIndices);
-    console.log("These are the samples", this.samples);
 
   }
 
@@ -476,20 +470,15 @@ export class ErpComponent implements OnInit, AfterViewChecked {
     for (const iPair of (isTarget) ? this.targetChunkIndices : this.controlChunkIndices){
       // Get the chunk
       let chunk = channelData.slice(iPair[0], iPair[1]);
-      //console.log("This is the chunk", chunk);
       // save smallest chunk length
       minChunkLen = Math.min(minChunkLen, chunk.length);
-      if (isTarget){
-        //console.log("This is the chunk", chunk);
-        console.log("difference", (Math.abs(Math.max(...chunk) - Math.min(...chunk))));
-      }
 
       if (Math.abs(Math.max(...chunk) - Math.min(...chunk)) > this.maxVariation ) {
         // skipping chunks with a maximum creater than 75 microvolts
         continue;
       }
       const avg = this.incomingData.average(chunk.slice(0, 50));
-      console.log("mean is ", avg);
+
       chunk = chunk.map(elem => elem - avg);
       allChunks.push(chunk);
     }
@@ -497,7 +486,6 @@ export class ErpComponent implements OnInit, AfterViewChecked {
     const numChunks = allChunks.length;
     if (numChunks === 0){
       // no matching chunks
-      console.log("no matching chunks");
       return;
     }
     for (let i = 0; i < minChunkLen; i++){
@@ -526,7 +514,7 @@ export class ErpComponent implements OnInit, AfterViewChecked {
        // remove old data by setting length to 0
       this.chart.data.datasets[i].data.length = 0;
 
-      if (i === 0){
+      if (i === 0)  {
         this.controlAvgLine.forEach((val: number, ind: number) => { this.chart.data.datasets[i].data.push(val);
                                                                     if (useControlLabel){ this.chart.data.labels.push(ind); }});
       }else{
@@ -536,8 +524,6 @@ export class ErpComponent implements OnInit, AfterViewChecked {
 
     }
     this.chart.update();
-    //console.log("target control line", this.targetAvgLine);
-    //console.log("control line", this.controlAvgLine);
   }
 
   // Used to add new lines to the game canvas
