@@ -62,8 +62,8 @@ export class BciComponent implements OnInit, OnDestroy,  AfterViewChecked {
   switcher = 0;
   increment = '2 Std';
   numOfStd = 2;
-  comparison = 'Compare last 4';
-  numOfComparison = 4;
+  comparison = 'Compare last 3';
+  numOfComparison = 3;
 
   // positon of the ball for game
   x = 8;
@@ -310,6 +310,7 @@ export class BciComponent implements OnInit, OnDestroy,  AfterViewChecked {
       document.body.appendChild(this.link);
       this.link.download = 'recording.csv';
       this.link.click();
+      this.isRecording = false;
     }
 
       this.openModal(modalID);
@@ -354,6 +355,19 @@ export class BciComponent implements OnInit, OnDestroy,  AfterViewChecked {
     }
   }
 
+  decreaseFreq(): void{
+    if(this.selectedFreq>=2){
+      this.selectedFreq--;
+    }
+  }
+
+  increaseFreq():void {
+    if(this.selectedFreq <=30){
+      this.selectedFreq++;
+    }
+
+  }
+
   setNumOfStd( val: any ): any{
       this.numOfStd = val;
       val === 0 ? this.increment = val + ' Std' : (val === 1 ? this.increment = val + ' Std' : ( val === 2 ? this.increment = val + ' Std'
@@ -362,7 +376,7 @@ export class BciComponent implements OnInit, OnDestroy,  AfterViewChecked {
   setComparison(val: any): any {
    this.numOfComparison = val;
    val === 5 ? this.comparison = 'Compare last ' + val : (val === 4 ? this.comparison = 'Compare last ' + val
-     : this.comparison = 'Compare last ' + val);
+     : (val === 3 ? this.comparison = 'Compare last ' + val : this.comparison = 'Compare last ' + val));
   }
 
   playGame(): void {
@@ -374,8 +388,8 @@ export class BciComponent implements OnInit, OnDestroy,  AfterViewChecked {
         this.x += 2;
         ctx.fillStyle = 'green';
     }
-    if (this.x > 308) {
-       this.x -= 8;
+    if (this.x > 292) {
+       this.x = 8;
     }
     if (this.switcher === 0) {
     ctx.fillStyle = 'red';
