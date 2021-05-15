@@ -15,7 +15,6 @@ import { TimeSeriesComponent } from './time-series/time-series.component';
 import { FormsModule } from '@angular/forms';
 import { BciComponent } from './bci/bci.component';
 import { ErpComponent } from './erp/erp.component';
-import { EcgComponent } from './ecg/ecg.component';
 import { HomeComponent } from './home/home.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
@@ -42,7 +41,6 @@ import { ModalComponent } from './shared/modal/modal.component';
     TimeSeriesComponent,
     BciComponent,
     ErpComponent,
-    EcgComponent,
     HomeComponent,
     RegistrationComponent,
     LoginComponent,

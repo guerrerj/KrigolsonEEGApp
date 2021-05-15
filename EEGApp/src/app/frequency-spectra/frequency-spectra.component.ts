@@ -1,5 +1,5 @@
 import { DataService } from './../shared/dataService';
-import { backgroundColors, borderColors,  channelLabels, FreqSpectraChartOptions, getSettings, ISettings } from './../shared/chartOptions';
+import { backgroundColors, borderColors,  channelLabels, FreqSpectraChartOptions, getColors, getSettings, ISettings, orderedLabels } from './../shared/chartOptions';
 import { Component, Input, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
@@ -7,6 +7,8 @@ import { channelNames, EEGSample } from 'muse-js';
 import { takeUntil } from 'rxjs/operators';
 import { catchError } from 'rxjs/operators';
 import { Chart } from 'chart.js';
+import { ChartService } from '../shared/chart.service';
+
 
 
 import {spectraDataSet } from '../shared/chartOptions';
@@ -40,9 +42,9 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
   settings: ISettings;
 
   readonly destroy = new Subject<void>();
-  readonly channelNames = channelNames;
-
-  chart: Chart;
+  readonly channelNames = orderedLabels;
+  readonly colors = getColors();
+  charts: Chart[];
 
   constructor(private incomingData: DataService) {}
 
@@ -50,28 +52,31 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
     // Get settings for the charts
     this.settings = getSettings();
     this.settings.name = 'Frequency Spectrum';
+    this.charts = [];
 
-    // Get the chart options such as adding dummy data and configurations
-    const canvas = document.getElementById('freqChart') as HTMLCanvasElement;
+    // Get the charts options such as adding dummy data and configurations
     const dataSets = [];
 
     Array(this.settings.nChannels).fill(0).map((ch, i) => {
           const temp =  Object.assign({}, spectraDataSet);
           temp.backgroundColor = backgroundColors[i];
           temp.borderColor = borderColors[i];
-          temp.label = channelLabels[i];
           temp.data  = Array(this.settings.maxFreq).fill(0);
           dataSets.push(temp);
         });
-    // Instantiate the chart with the options
-    this.chart = new Chart(canvas, {
+    // Instantiate the charts with the options
+    for (let i = 0; i < 4; i++){
+        const canvas = document.getElementById('freqChart' + (i + 1)) as HTMLCanvasElement;
+        console.log('canvas', canvas);
+        this.charts.push(new Chart(canvas, {
           type: 'line',
           data: {
-            datasets: [dataSets[0], dataSets[1], dataSets[2], dataSets[3]],
+            datasets: [dataSets[i]],
             labels: [],
         },
         options: FreqSpectraChartOptions
-      });
+      }));
+    }
   }
 
   ngAfterViewInit(): void {
@@ -110,19 +115,20 @@ export class FrequencySpectraComponent implements OnInit, OnDestroy, AfterViewIn
   addData(spectraData: any): void {
     for (let i = 0; i < this.settings.nChannels; i++) {
       // remove old data by setting length to 0
-      this.chart.data.datasets[i].data.length = 0;
-      spectraData.psd[i].forEach((val: number) => this.chart.data.datasets[i].data.push(val));
+      this.charts[i].data.datasets[0].data.length = 0;
+      spectraData.psd[i].forEach((val: number) => this.charts[i].data.datasets[0].data.push(val));
 
       // add labels if they have not been added up until 31 labels
-      if (this.chart.data.labels.length < this.settings.maxFreq - 1)
+      if (this.charts[i].data.labels.length < this.settings.maxFreq - 1)
       {
-        this.chart.data.labels.length = 0;
+        this.charts[i].data.labels.length = 0;
         // get the freq labels that are below the maxFreq required
         const freqs  = spectraData.freqs.filter((x: number) => x < this.settings.maxFreq);
-        freqs.forEach((val: number) => this.chart.data.labels.push(val));
+        freqs.forEach((val: number) => this.charts[i].data.labels.push(val));
       }
+      this.charts[i].update();
     }
-    this.chart.update();
+
   }
 }
 

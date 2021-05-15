@@ -31,6 +31,7 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
   faRecordVinyl = faRecordVinyl;
   readonly destroy = new Subject<void>();
   readonly channelNames = orderedLabels;
+  readonly colors = this.chartService.getColors();
   readonly amplitudes = [];
   readonly uVrms = [0, 0, 0, 0, 0];
   readonly uMeans = [0, 0, 0, 0, 0];
@@ -44,7 +45,7 @@ export class TimeSeriesComponent implements OnInit, OnDestroy, AfterViewInit, Af
     maxValue: 500,
     minValue: -500
   });
-  readonly colors = this.chartService.getColors();
+
 
   private lines: TimeSeries[];
   private samples: number [][];

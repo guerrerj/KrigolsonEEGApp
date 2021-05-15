@@ -1,22 +1,33 @@
 <div class="bodyContent">
   <div class="jumbotron jumbotron-fluid banner">
-    <h1 class="display-5">EEG Data Tool</h1>
-       <p class="lead">Observe and explore EEG Data</p>
-    <hr class="my-4">
+    <div class="row">
+        <div class="col-12 col-md-8">
+          <h1 class="display-5">EEG Explorer</h1>
+            <p class="lead"> A tool to help you explore and analyze EEG data</p>
+          <hr class="my-4">
+        </div>
 
-    <div class="logBtn">
-      <p *ngIf="user">Logged in as: {{ user?.displayName }}</p>
-      <button class="btn btn-primary mr-2" *ngIf="!user" (click)="register()">Register</button>
-      <button *ngIf="user"  (click)="logout()">Logout</button>
-      <button class="btn btn-primary" *ngIf="!user" (click)="login()">Login</button>
-    </div>
+        <div class="col-12 col-md-2 headerBtnCnct">
+            <button type="button" class="btn btn-primary btn-lg" (click)="showConnectModal()">Connection</button>
+            <div *ngIf="connectedCopy">
+                <span class="badge badge-pill badge-success">Connected to Headband.</span>
+            </div>
+        </div>
 
-    <p class="lead">
-      <button type="button" class="btn btn-primary btn-lg" (click)="showConnectModal()">Connection</button>
-    </p>
-    <div *ngIf="connectedCopy">
-        <span class="badge badge-pill badge-success">Connected to Muse</span>
-    </div>
+        <div class="col-12 col-md-2">
+            <div class="row headerAlign">
+                <p *ngIf="user">Logged in as: {{ user?.displayName }}</p>
+                <button class="btn btn-primary mr-2" *ngIf="!user" (click)="register()">Register</button>
+                <button *ngIf="user"  (click)="logout()">Logout</button>
+                <button class="btn btn-primary" *ngIf="!user" (click)="login()">Login</button>
+            </div>
+            <div class="row headerAlign">
+                <span class="badge badge-pill badge-dark" style="line-height:1rem">Register or Login to be <br/> able to save your EEG data.</span>
+            </div>
+
+         </div>
+
+      </div>
   </div>
      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,12 +36,11 @@
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
           <a class="nav-item nav-link active" href="/home">Home <span class="sr-only">(current)</span></a>
-          <a class="nav-item nav-link" routerLink="/time-series" routerLinkActive="active">EEG Data</a>
-          <a class="nav-item nav-link" routerLink="/frequency-bands" routerLinkActive="active">Frequency Bands</a>
+          <a class="nav-item nav-link" routerLink="/time-series" routerLinkActive="active">Raw EEG</a>
+          <a class="nav-item nav-link" routerLink="/frequency-bands" routerLinkActive="active"> FFT</a>
           <a class="nav-item nav-link" routerLink="/frequency-spectra" routerLinkActive="active">Frequency Spectrum</a>
-          <a class="nav-item nav-link" routerLink="/frequency-experiments" routerLinkActive="active">Frequency Experiments</a>
+          <a class="nav-item nav-link" routerLink="/frequency-experiments" routerLinkActive="active">Frequency Experiment</a>
           <a class="nav-item nav-link" routerLink="/bci" routerLinkActive="active">BCI</a>
-          <a class="nav-item nav-link" routerLink="/ecg" routerLinkActive="active">ECG</a>
           <a class="nav-item nav-link" routerLink="/erp" routerLinkActive="active">ERP</a>
         </div>
       </div>

@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./app.component.less']
 })
 export class AppComponent implements OnInit {
-  title = 'EEGApp';
+  title = 'EEG Explorer';
   connectedCopy = false;
   connectingCopy = false;
   batteryLevel = 0;

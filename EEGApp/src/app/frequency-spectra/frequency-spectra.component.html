@@ -1,12 +1,32 @@
 <div class="container frequency-spectra">
-  <div class="row">
-    <div class="col-8 mx-auto">
-      <article class="frequency-spectra-bar">
-      <div id="freq-spectra-cont">
-        <h3>Frequency Spectrum Chart</h3>
-        <canvas id="freqChart"></canvas>
-      </div>
-      </article>
-    </div>
-  </div>
+	<div class="txt">
+		<p>This page shows you the EEG power at each frequency between 1 and 30 Hz</p>
+	</div>
+				<div class="row">
+					<div class="col-6 frequency-spectra-channel">
+						<aside class="frequency-spectra-control">
+							<div class="frequency-spectra-number" [ngStyle]="{ background: colors[0].borderColor }"> {{ channelNames[0] }} </div>
+						</aside>
+						<canvas id="freqChart1" ></canvas>
+					</div>
+          <div class="col-6 frequency-spectra-channel">
+						<aside class="frequency-spectra-control">
+							<div class="frequency-spectra-number" [ngStyle]="{ background: colors[1].borderColor }"> {{ channelNames[1] }} </div>
+						</aside>
+						<canvas id="freqChart2" ></canvas>
+					</div>
+          <div class="col-6 frequency-spectra-channel">
+						<aside class="frequency-spectra-control">
+							<div class="frequency-spectra-number" [ngStyle]="{ background: colors[2].borderColor }"> {{ channelNames[2] }} </div>
+						</aside>
+						<canvas id="freqChart3" ></canvas>
+					</div>
+          <div class="col-6 frequency-spectra-channel">
+						<aside class="frequency-spectra-control">
+							<div class="frequency-spectra-number" [ngStyle]="{ background: colors[3].borderColor }"> {{ channelNames[3] }} </div>
+						</aside>
+						<canvas id="freqChart4" ></canvas>
+					</div>
+
+				</div>
 </div>

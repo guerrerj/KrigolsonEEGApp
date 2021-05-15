@@ -9,10 +9,8 @@ import { CommonModule } from '@angular/common';
 
 
 import { BciComponent } from './bci/bci.component';
-import { EcgComponent } from './ecg/ecg.component';
 import { ErpComponent } from './erp/erp.component';
 import { HomeComponent } from './home/home.component';
-import { AuthGuard } from './service/auth.guard';
 import { LoginComponent } from './auth/login/login.component';
 import { RegistrationComponent } from './auth/registration/registration.component';
 
@@ -24,10 +22,9 @@ const routes: Routes = [
   {path: 'frequency-experiments', component: FrequencyExperimentsComponent},
   {path: 'time-series', component: TimeSeriesComponent},
   {path: 'bci', component: BciComponent},
-  {path: 'ecg', component: EcgComponent},
   {path: 'erp', component: ErpComponent},
   {path: 'login', component: LoginComponent},
-  {path: 'registration',component: RegistrationComponent}
+  {path: 'registration', component: RegistrationComponent}
 ];
 
 @NgModule({

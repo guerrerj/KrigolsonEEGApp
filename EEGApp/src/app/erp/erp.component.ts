@@ -11,7 +11,8 @@ import * as Chart from 'chart.js';
 
 export enum KEY_CODE  {
   SPACE = ' ',
-  U_KEY = 'u'
+  U_KEY = 'u',
+  DOT = '.'
 }
 
 export enum STAGES {
@@ -44,12 +45,14 @@ export class ErpComponent implements OnInit, AfterViewChecked {
   canvas: ElementRef<HTMLCanvasElement>;
 
   @Input() data: Observable<EEGSample>;
+  oddBallChance = 0.25;
+  numberBlocks = 10;
+  numberTrials = 20;
 
-  readonly oddBallChance = 0.25;
   readonly fixationDelay = 0.3;
   readonly fixationDeviation = 0.1;
   readonly circleTime = 500; // ms
-  readonly colorOptions = ['black', 'silver', 'gray', 'maroon', 'red', 'purple',
+  readonly colorOptions = ['silver', 'gray', 'maroon', 'red', 'purple',
    'fuchsia', 'green', 'lime', 'olive', 'yellow', 'navy', 'blue', 'teal', 'aqua', 'orange'];
   readonly radius = 30;
   readonly startAngle = 0;
@@ -57,11 +60,10 @@ export class ErpComponent implements OnInit, AfterViewChecked {
   readonly headingFont = '25px  Lobster';
   readonly smallFont = '15px Lobster';
   readonly normalFont = '20px Lobster';
-  readonly textColor = 'black';
-  readonly numberBlocks = 10;
-  readonly numberTrials = 20;
+  readonly textColor = 'white';
+
   readonly textDelay = 1000; // ms
-  readonly canvasColor = '#C7A27C';
+  readonly canvasColor = 'black';
   readonly targetVal = 2;
   readonly constVal = 1;
   readonly channels = 4;
@@ -158,19 +160,23 @@ export class ErpComponent implements OnInit, AfterViewChecked {
   handleKeyboardEvent(event: KeyboardEvent): any {
     if ( event.key === KEY_CODE.SPACE && this.stage  < STAGES.THREE ){
       this.stage += 1;
+      event.preventDefault();
     }
     if ( event.key.toLowerCase() === KEY_CODE.U_KEY && this.stage === (STAGES.THREE + 1) ){
       this.stage += 1;
+      event.preventDefault();
     }
 
     if ( event.key === KEY_CODE.SPACE && this.stage === STAGES.ELEVEN ){
       this.stage += 2;
       this.currentResponse = 1;
       this.reactionTime = Date.now() - this.startTime;
+      event.preventDefault();
     }
     if ( event.key === KEY_CODE.SPACE && this.stage  > STAGES.FIFTEEN ){
+      event.preventDefault();
     }
-    event.preventDefault();
+
   }
 
   startGame(): void {
@@ -255,7 +261,7 @@ export class ErpComponent implements OnInit, AfterViewChecked {
     switch (this.stage){
       case (STAGES.ONE):
         this.startRecording();
-        this.addText(this.headingFont, 'Welcome to the Oddball Game: Press space to continue.');
+        this.addText(this.headingFont, 'Welcome to the Oddball: Press space to continue.');
         this.textY += 25;
         this.addText(this.smallFont, 'Press space to continue');
         this.stage++;
@@ -383,7 +389,7 @@ export class ErpComponent implements OnInit, AfterViewChecked {
         this.processChunks(false);
         this.plotReaction();
         this.stage++;
-        setTimeout(() => { this.resetGame(); this.stage = 1; }, 3000);
+        setTimeout(() => { this.resetGame(); this.stage = 1; }, 2000);
     }
   }
 
@@ -577,6 +583,35 @@ export class ErpComponent implements OnInit, AfterViewChecked {
     this.selectedBand = val.toLowerCase();
     this.displayedBand = val;
   }
+
+  // Let the user set the number of Blocks
+  setBlocks(val: number): void {
+    if (isNaN(val) || val < 1) { // return if number not valid
+      this.messagesService.setWarning('Number must be greater than 0.');
+      return;
+    }
+    console.log("inside set blocks");
+    this.numberBlocks = Math.floor(val); // In case of floats
+  }
+
+  // Let the user set the number of Trials
+  setTrials(val: number): void {
+    if (isNaN(val) || val < 1) { // return if number not valid
+      this.messagesService.setWarning('Number must be greater than 0.');
+      return;
+    }
+    this.numberTrials = Math.floor(val); // In case of floats
+  }
+
+   // Let the user set the number of Trials
+   setOddBallChance(val: number): void {
+    if (isNaN(val) || val < 0 || val > 1.0) {
+      this.messagesService.setWarning('Odd ball chance must be a number within 0 to 1.0 inclusive.');
+      return;
+    }
+    this.oddBallChance = val;
+  }
+
 
   // Used to get the warning message
   get getWarningMessage(): string {
